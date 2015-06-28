@@ -1,0 +1,20 @@
+{
+    "name": "optimus/laravel-boilerplate",
+    "autoload": {
+        "psr-4": {
+            "Optimus\\LaravelBoilerplate\\": "src/"
+        }
+    },
+    "require": {
+        "laravel/framework": "~5.1"
+    },
+    "require-dev": {
+        "mockery/mockery": "0.9.*",
+        "orchestra/testbench": "~3.1",
+        "phpunit/phpunit": "~4.7",
+        "satooshi/php-coveralls": "dev-master@dev"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "license": "MIT"
+}
