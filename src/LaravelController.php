@@ -4,6 +4,7 @@ namespace Optimus\Api\Controller;
 
 use InvalidArgumentException;
 use Illuminate\Routing\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -24,6 +25,15 @@ abstract class LaravelController extends Controller {
     protected $request;
 
     protected $options;
+
+    protected function response($data, $statusCode = 200, $headers = [])
+    {
+        if ($data instanceof Arrayable && !$data instanceof JsonSerializable) {
+            $data = $data->toArray();
+        }
+
+        return new JsonResponse($data, $status, $headers);
+    }
 
     protected function parseData($data, $key)
     {
