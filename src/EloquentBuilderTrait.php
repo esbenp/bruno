@@ -11,13 +11,13 @@ trait EloquentBuilderTrait {
         if (!empty($options)) {
             $query->with($options['includes']);
 
-            if (!is_null($options['sort'])) {
+            if (isset($options['sort'])) {
                 $query->orderBy($options['sort']);
             }
-            if (!is_null($options['limit'])) {
+            if (isset($options['limit'])) {
                 $query->limit($options['limit']);
             }
-            if (!is_null($options['page'])) {
+            if (isset($options['page'])) {
                 $query->offset($options['page']*$options['limit']);
             }
         }
