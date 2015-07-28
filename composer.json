@@ -1,8 +1,8 @@
 {
-    "name": "optimus/laravel-boilerplate",
+    "name": "optimus/laravel-controller",
     "autoload": {
         "psr-4": {
-            "Optimus\\LaravelBoilerplate\\": "src/"
+            "Optimus\\Api\\Controller\\": "src/"
         }
     },
     "require": {
