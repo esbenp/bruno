@@ -32,7 +32,7 @@ abstract class LaravelController extends Controller {
             $data = $data->toArray();
         }
 
-        return new JsonResponse($data, $status, $headers);
+        return new JsonResponse($data, $statusCode, $headers);
     }
 
     protected function parseData($data, $key)
