@@ -9,7 +9,7 @@ trait EloquentBuilderTrait {
     private function applyResourceOptions(Builder $query, array $options = [])
     {
         if (!empty($options)) {
-            $query->with($options['includes']['includes']);
+            $query->with($options['includes']);
 
             if (!is_null($options['sort'])) {
                 $query->orderBy($options['sort']);

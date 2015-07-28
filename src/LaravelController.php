@@ -22,6 +22,8 @@ abstract class LaravelController extends Controller {
 
     protected $modeResolvers = [];
 
+    protected $modes = [];
+
     protected $request;
 
     protected $options;
@@ -38,7 +40,7 @@ abstract class LaravelController extends Controller {
     protected function parseData($data, $key)
     {
         $return = [];
-        $modes = $this->options['includes']['modes'];
+        $modes = $this->modes;
 
         uksort($modes, function($a, $b){
             return substr_count($b, '.')-substr_count($a, '.');
@@ -181,11 +183,13 @@ abstract class LaravelController extends Controller {
         }
 
         $this->options = [
-            'includes' => $includes,
+            'includes' => $includes['includes'],
             'sort' => $sort,
             'limit' => $limit,
             'page' => $page
         ];
+
+        $this->modes = $includes['modes'];
 
         return $this->options;
     }
