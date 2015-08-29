@@ -5,30 +5,26 @@ namespace Optimus\Api\Controller;
 use InvalidArgumentException;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Optimus\Architect\Architect;
 
 abstract class LaravelController extends Controller {
 
-    protected $includes = [];
+    protected $defaults = [
+        'includes' => [],
+        'sort' => null,
+        'limit' => null,
+        'page' => null,
+        'mode' => 'embed'
+    ];
 
-    protected $sort = null;
-
-    protected $limit = null;
-
-    protected $page = null;
-
-    protected $mode = 'embed';
-
-    protected $modeResolvers = [];
-
-    protected $modes = [];
-
-    protected $request;
-
-    protected $options;
-
-    protected function response($data, $statusCode = 200, $headers = [])
+    /**
+     * Create a json response
+     * @param  mixed  $data
+     * @param  integer $statusCode
+     * @param  array  $headers
+     * @return Illuminate\Http\JsonResponse
+     */
+    protected function response($data, $statusCode = 200, array $headers = [])
     {
         if ($data instanceof Arrayable && !$data instanceof JsonSerializable) {
             $data = $data->toArray();
@@ -37,117 +33,25 @@ abstract class LaravelController extends Controller {
         return new JsonResponse($data, $statusCode, $headers);
     }
 
-    protected function parseData($data, $key)
+    /**
+     * Parse data using architect
+     * @param  mixed $data
+     * @param  array  $options
+     * @param  string $key
+     * @return mixed
+     */
+    protected function parseData($data, array $options, $key = null)
     {
-        $return = [];
-        $modes = $this->modes;
+        $architect = new Architect;
 
-        uksort($modes, function($a, $b){
-            return substr_count($b, '.')-substr_count($a, '.');
-        });
-
-        if ($this->isCollection($data)) {
-            $return[$key] = $this->parseCollection($modes, $data, $return);
-        } else {
-            $return[$key] = $this->parseResource($modes, $data, $return);
-        }
-
-        return $return;
+        return $architect->parseData($data, $options['modes'], $key);
     }
 
-    protected function parseCollection(array $modes, $collection, &$root)
-    {
-        foreach($collection as &$resource){
-            $resource = $this->parseResource($modes, $resource, $root);
-        }
-
-        return $collection;
-    }
-
-    protected function parseResource(array $modes, &$resource, &$root)
-    {
-        foreach($modes as $relation => $mode) {
-            $modeResolver = $this->resolveMode($mode);
-
-            $steps = explode('.', $relation);
-            $property = array_shift($steps);
-
-            if (is_array($resource) || $resource instanceof \ArrayAccess) {
-                $object = &$resource[$property];
-            } else {
-                $object = &$resource->{$property};
-            }
-
-            if (empty($steps)) {
-                $object = $this->modeResolvers[$mode]->resolve($relation, $object, $root);
-            } else {
-                $path = implode('.', $steps);
-                $modes = [
-                    $path => $mode
-                ];
-
-                if ($this->isCollection($object)) {
-                    $object = $this->parseCollection($modes, $object, $root);
-                } else {
-                    $object = $this->parseResource($modes, $object, $root);
-                }
-            }
-
-            if (is_array($resource) || $resource instanceof \ArrayAccess) {
-                $resource[$property] = $object;
-            } else {
-                $resource->{$property} = $object;
-            }
-        }
-
-        return $resource;
-    }
-
-    protected function isCollection($input)
-    {
-        return is_array($input) || $input instanceof Collection;
-    }
-
-    protected function resolveMode($mode)
-    {
-        if (!isset($this->modeResolers[$mode])) {
-            $this->modeResolvers[$mode] = $this->createModeResolver($mode);
-        }
-
-        return $this->modeResolvers[$mode];
-    }
-
-    protected function &resolveDotNotation(&$data, $steps)
-    {
-        foreach($steps as $step) {
-            if (is_array($data) || $data instanceof \ArrayAccess) {
-                $data =& $data[$step];
-            } else {
-                $data =& $data->{$step};
-            }
-        }
-        return $data;
-    }
-
-    protected function createModeResolver($mode)
-    {
-        $class = 'Optimus\Api\Controller\ModeResolver\\';
-        switch($mode){
-            default:
-            case 'embed':
-                $class .= 'EmbedModeResolver';
-                break;
-            case 'ids':
-                $class .= 'IdsModeResolver';
-                break;
-            case 'sideload':
-                $class .= 'SideloadModeResolver';
-                break;
-        }
-
-        return new $class;
-    }
-
+    /**
+     * Parse include strings into resource and modes
+     * @param  array  $includes
+     * @return array The parsed resources and their respective modes
+     */
     protected function parseIncludes(array $includes)
     {
         $return = [
@@ -159,7 +63,7 @@ abstract class LaravelController extends Controller {
             $explode = explode(':', $include);
 
             if (!isset($explode[1])) {
-                $explode[1] = $this->mode;
+                $explode[1] = $this->defaults['mode'];
             }
 
             $return['includes'][] = $explode[0];
@@ -169,29 +73,30 @@ abstract class LaravelController extends Controller {
         return $return;
     }
 
+    /**
+     * Parse GET parameters into resource options
+     * @return array
+     */
     protected function parseResourceOptions()
     {
         $request = $this->getRouter()->getCurrentRequest();
 
-        $includes = $this->parseIncludes($request->get('includes', $this->includes));
-        $sort = $request->get('sort', $this->sort);
-        $limit = (int) $request->get('limit', $this->limit);
-        $page = (int) $request->get('page', $this->page);
+        $includes = $this->parseIncludes($request->get('includes', $this->defaults['includes']));
+        $sort = $request->get('sort', $this->defaults['sort']);
+        $limit = $request->get('limit', $this->defaults['limit']);
+        $page = $request->get('page', $this->defaults['page']);
 
         if ($page !== null && $limit === null) {
             throw new InvalidArgumentException('Cannot use page option without limit option');
         }
 
-        $this->options = [
+        return [
             'includes' => $includes['includes'],
+            'modes' => $includes['modes'],
             'sort' => $sort,
             'limit' => $limit,
             'page' => $page
         ];
-
-        $this->modes = $includes['modes'];
-
-        return $this->options;
     }
 
 }

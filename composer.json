@@ -6,7 +6,8 @@
         }
     },
     "require": {
-        "laravel/framework": "~5.1"
+        "laravel/framework": "~5.1",
+        "optimus/architect": "0.1.*"
     },
     "require-dev": {
         "mockery/mockery": "0.9.*",
@@ -14,7 +15,7 @@
         "phpunit/phpunit": "~4.7",
         "satooshi/php-coveralls": "dev-master@dev"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "license": "MIT"
 }

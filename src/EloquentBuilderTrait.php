@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait EloquentBuilderTrait {
 
+    /**
+     * Apply resource options to a query builder
+     * @param  Builder $query
+     * @param  array  $options
+     * @return Illuminate\Database\Eloquent\Builder
+     */
     private function applyResourceOptions(Builder $query, array $options = [])
     {
         if (!empty($options)) {
