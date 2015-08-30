@@ -7,8 +7,8 @@ use Illuminate\Routing\Controller;
 use Illuminate\Http\JsonResponse;
 use Optimus\Architect\Architect;
 
-abstract class LaravelController extends Controller {
-
+abstract class LaravelController extends Controller
+{
     protected $defaults = [
         'includes' => [],
         'sort' => null,
@@ -59,7 +59,7 @@ abstract class LaravelController extends Controller {
             'modes' => []
         ];
 
-        foreach($includes as $include) {
+        foreach ($includes as $include) {
             $explode = explode(':', $include);
 
             if (!isset($explode[1])) {
@@ -98,5 +98,4 @@ abstract class LaravelController extends Controller {
             'page' => $page
         ];
     }
-
 }

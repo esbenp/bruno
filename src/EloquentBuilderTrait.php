@@ -4,8 +4,8 @@ namespace Optimus\Api\Controller;
 
 use Illuminate\Database\Eloquent\Builder;
 
-trait EloquentBuilderTrait {
-
+trait EloquentBuilderTrait
+{
     /**
      * Apply resource options to a query builder
      * @param  Builder $query
@@ -30,5 +30,4 @@ trait EloquentBuilderTrait {
 
         return $query;
     }
-
 }

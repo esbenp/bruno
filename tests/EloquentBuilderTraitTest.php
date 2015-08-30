@@ -3,11 +3,12 @@
 use Mockery as m;
 use Optimus\Api\Controller\EloquentBuilderTrait;
 
-class EloquentBuilderTraitTest extends Orchestra\Testbench\TestCase {
-
+class EloquentBuilderTraitTest extends Orchestra\Testbench\TestCase
+{
     use EloquentBuilderTrait;
 
-    public function testParametersAreAppliedCorrectly() {
+    public function testParametersAreAppliedCorrectly()
+    {
         $mock = m::mock('Illuminate\Database\Eloquent\Builder');
         $mock->shouldReceive('with')->once()->with(m::mustBe([
             'children1', 'children2'
@@ -24,10 +25,10 @@ class EloquentBuilderTraitTest extends Orchestra\Testbench\TestCase {
         ]);
     }
 
-    public function testNoParamersAreApplied() {
+    public function testNoParamersAreApplied()
+    {
         $mock = m::mock('Illuminate\Database\Eloquent\Builder');
 
         $this->applyResourceOptions($mock);
     }
-
 }

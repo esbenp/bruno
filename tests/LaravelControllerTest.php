@@ -5,9 +5,10 @@ use Illuminate\Http\Request;
 
 require_once __DIR__.'/Controller.php';
 
-class LaravelControllerTest extends Orchestra\Testbench\TestCase {
-
-    public function testResponseIsGenerated() {
+class LaravelControllerTest extends Orchestra\Testbench\TestCase
+{
+    public function testResponseIsGenerated()
+    {
         $controller = new Controller;
         $response = $controller->getResponseWithResourceCollection();
         $data = $response->getData();
@@ -16,7 +17,8 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase {
         $this->assertTrue(is_array($data));
     }
 
-    public function testParametersAreAppliedCorrectly() {
+    public function testParametersAreAppliedCorrectly()
+    {
         $request = $this->createRequest(['children', 'children2'], 'name', 100, 2);
         $controller = $this->createControllerMock($request);
 
@@ -30,7 +32,8 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase {
         $this->assertEquals($options['page'], 2);
     }
 
-    public function testArchitectIsFired() {
+    public function testArchitectIsFired()
+    {
         $request = $this->createRequest(['children:ids']);
         $controller = $this->createControllerMock($request);
 
@@ -73,5 +76,4 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase {
             'page' => $page
         ]);
     }
-
 }

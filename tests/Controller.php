@@ -3,8 +3,8 @@
 use Illuminate\Support\Collection;
 use Optimus\Api\Controller\LaravelController;
 
-class Controller extends LaravelController {
-
+class Controller extends LaravelController
+{
     public function getResponseWithResourceCollection()
     {
         $resources = $this->getResourceCollection();
@@ -55,5 +55,4 @@ class Controller extends LaravelController {
     {
         return $this->parseResourceOptions();
     }
-
 }
