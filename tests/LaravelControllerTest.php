@@ -7,6 +7,17 @@ require_once __DIR__.'/Controller.php';
 
 class LaravelControllerTest extends Orchestra\Testbench\TestCase
 {
+
+    public function testDefaultsWorks()
+    {
+        $request = $this->createRequest([], null);
+        $controller = $this->createControllerMock($request);
+
+        $options = $controller->getResourceOptions();
+
+        $this->assertEquals('name', $options['sort']);
+    }
+
     public function testResponseIsGenerated()
     {
         $controller = new Controller;
@@ -69,11 +80,23 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
 
     private function createRequest(array $includes = [], $sort = 'property', $limit = null, $page = null)
     {
-        return new Request([
-            'includes' => $includes,
-            'sort' => $sort,
-            'limit' => $limit,
-            'page' => $page
-        ]);
+        $vars = [];
+        if (!empty($includes)) {
+            $vars['includes'] = $includes;
+        }
+
+        if ($sort !== null) {
+            $vars['sort'] = $sort;
+        }
+
+        if ($limit !== null) {
+            $vars['limit'] = $limit;
+        }
+
+        if ($page !== null) {
+            $vars['page'] = $page;
+        }
+
+        return new Request($vars);
     }
 }

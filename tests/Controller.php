@@ -5,6 +5,12 @@ use Optimus\Api\Controller\LaravelController;
 
 class Controller extends LaravelController
 {
+
+    // Test that setting defaults does not override
+    protected $defaults = [
+        'sort' => 'name'
+    ];
+
     public function getResponseWithResourceCollection()
     {
         $resources = $this->getResourceCollection();

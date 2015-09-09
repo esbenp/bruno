@@ -9,13 +9,7 @@ use Optimus\Architect\Architect;
 
 abstract class LaravelController extends Controller
 {
-    protected $defaults = [
-        'includes' => [],
-        'sort' => null,
-        'limit' => null,
-        'page' => null,
-        'mode' => 'embed'
-    ];
+    protected $defaults = [];
 
     /**
      * Create a json response
@@ -80,6 +74,14 @@ abstract class LaravelController extends Controller
     protected function parseResourceOptions()
     {
         $request = $this->getRouter()->getCurrentRequest();
+
+        $this->defaults = array_merge([
+            'includes' => [],
+            'sort' => null,
+            'limit' => null,
+            'page' => null,
+            'mode' => 'embed'
+        ], $this->defaults);
 
         $includes = $this->parseIncludes($request->get('includes', $this->defaults['includes']));
         $sort = $request->get('sort', $this->defaults['sort']);
