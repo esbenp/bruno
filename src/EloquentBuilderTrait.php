@@ -2,6 +2,7 @@
 
 namespace Optimus\Api\Controller;
 
+use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Builder;
 
 trait EloquentBuilderTrait
@@ -15,16 +16,26 @@ trait EloquentBuilderTrait
     private function applyResourceOptions(Builder $query, array $options = [])
     {
         if (!empty($options)) {
-            $query->with($options['includes']);
+            extract($options);
 
-            if (isset($options['sort'])) {
-                $query->orderBy($options['sort']);
+            if (isset($includes)) {
+                if (!is_array($includes)) {
+                    throw InvalidArgumentException('Includes should be an array.');
+                }
+
+                $query->with($includes);
             }
-            if (isset($options['limit'])) {
-                $query->limit($options['limit']);
+
+            if (isset($sort)) {
+                $query->orderBy($sort);
             }
-            if (isset($options['page'])) {
-                $query->offset($options['page']*$options['limit']);
+
+            if (isset($limit)) {
+                $query->limit($limit);
+            }
+
+            if (isset($page)) {
+                $query->offset($page*$limit);
             }
         }
 
