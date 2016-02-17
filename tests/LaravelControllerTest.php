@@ -30,7 +30,14 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
 
     public function testParametersAreAppliedCorrectly()
     {
-        $request = $this->createRequest(['children', 'children2'], 'name', 100, 2);
+        $request = $this->createRequest(['children', 'children2'], 'name', 100, 2, [
+            [
+                'filters' => [
+                    'name:eq(foo)',
+                    'name:ct(bar)'
+                ]
+            ]
+        ]);
         $controller = $this->createControllerMock($request);
 
         $options = $controller->getResourceOptions();
@@ -41,6 +48,7 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
         $this->assertEquals($options['sort'], 'name');
         $this->assertEquals($options['limit'], 100);
         $this->assertEquals($options['page'], 2);
+        $this->assertTrue(count($options['filter_groups']) > 2);
     }
 
     public function testArchitectIsFired()
@@ -78,23 +86,27 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
         return $controller;
     }
 
-    private function createRequest(array $includes = [], $sort = 'property', $limit = null, $page = null)
+    private function createRequest(array $includes = [], $sort = 'property', $limit = null, $page = null, array $filters = [])
     {
         $vars = [];
         if (!empty($includes)) {
             $vars['includes'] = $includes;
         }
 
-        if ($sort !== null) {
+        if (!is_null($sort)) {
             $vars['sort'] = $sort;
         }
 
-        if ($limit !== null) {
+        if (!is_null($limit)) {
             $vars['limit'] = $limit;
         }
 
-        if ($page !== null) {
+        if (!is_null($page)) {
             $vars['page'] = $page;
+        }
+
+        if (!empty($filters)) {
+            $vars['filters'] = $filters;
         }
 
         return new Request($vars);

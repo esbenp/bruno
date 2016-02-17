@@ -68,6 +68,43 @@ abstract class LaravelController extends Controller
     }
 
     /**
+     * Parse filter group strings into filters
+     * Filters are formatted as key:operator(value)
+     * Example: name:eq(esben)
+     * @param  array  $filters
+     * @return array
+     */
+    protected function parseFilterGroups(array $filter_groups)
+    {
+        $return = [];
+
+        foreach($filter_groups as $group) {
+            if (!array_key_exists('filters', $group)) {
+                throw new InvalidArgumentException('Filter group does not have the \'filters\' key.');
+            }
+
+            $filters = array_map(function($filter){
+                $explode = explode(':', $filter);
+
+                $key = $explode[0];
+
+                preg_match('/^(!)?([a-zA-Z]{2})\((.+)\)$/', $explode[1], $matches);
+
+                return [
+                    'key'       => $key,
+                    'value'     => $matches[3],
+                    'operator'  => $matches[2],
+                    'not'       => $matches[1] === '!'
+                ];
+            }, $group['filters']);
+
+            $return[] = ['filters' => $filters];
+        }
+
+        return $return;
+    }
+
+    /**
      * Parse GET parameters into resource options
      * @return array
      */
@@ -80,13 +117,15 @@ abstract class LaravelController extends Controller
             'sort' => null,
             'limit' => null,
             'page' => null,
-            'mode' => 'embed'
+            'mode' => 'embed',
+            'filter_groups' => []
         ], $this->defaults);
 
         $includes = $this->parseIncludes($request->get('includes', $this->defaults['includes']));
         $sort = $request->get('sort', $this->defaults['sort']);
         $limit = $request->get('limit', $this->defaults['limit']);
         $page = $request->get('page', $this->defaults['page']);
+        $filter_groups = $this->parseFilterGroups($request->get('filter_groups', $this->defaults['filter_groups']));
 
         if ($page !== null && $limit === null) {
             throw new InvalidArgumentException('Cannot use page option without limit option');
@@ -97,7 +136,8 @@ abstract class LaravelController extends Controller
             'modes' => $includes['modes'],
             'sort' => $sort,
             'limit' => $limit,
-            'page' => $page
+            'page' => $page,
+            'filter_groups' => $filter_groups
         ];
     }
 }

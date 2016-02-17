@@ -2,6 +2,7 @@
 
 namespace Optimus\Api\Controller;
 
+use DB;
 use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -11,7 +12,7 @@ trait EloquentBuilderTrait
      * Apply resource options to a query builder
      * @param  Builder $query
      * @param  array  $options
-     * @return Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     private function applyResourceOptions(Builder $query, array $options = [])
     {
@@ -24,6 +25,10 @@ trait EloquentBuilderTrait
                 }
 
                 $query->with($includes);
+            }
+
+            if (isset($filter_groups)) {
+                $this->applyFilterGroups($query, $filter_groups);
             }
 
             if (isset($sort)) {
@@ -40,5 +45,42 @@ trait EloquentBuilderTrait
         }
 
         return $query;
+    }
+
+    private function applyFilterGroups(Builder $query, array $filterGroups = [])
+    {
+        foreach ($filterGroups as $group) {
+            $filters = $group['filters'];
+
+            $query->where(function (Builder $query) use ($filters) {
+                foreach ($filters as $filter) {
+                    $this->applyFilter($query, $filter);
+                }
+            });
+        }
+    }
+
+    private function applyFilter(Builder $query, array $filter)
+    {
+        if ($filter['value'] === 'null' || $filter['value'] === '') {
+            $method = $filter['not'] ? 'NotNull' : 'Null';
+
+            call_user_func([$query, $method], $filter['key']);
+        } else {
+            switch($filter['operator']) {
+                case 'ct':
+                    $query->where(
+                        $filter['key'],
+                        $filter['not'] ? 'NOT LIKE' : 'LIKE',
+                        '%'.$filter['value'].'%'
+                    );
+                    break;
+                case 'eq':
+                default:
+                    $operator = $filter['not'] ? '!=' : '=';
+                    $query->where($filter['key'], $operator, $filter['value']);
+                    break;
+            }
+        }
     }
 }
