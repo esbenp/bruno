@@ -21,7 +21,7 @@ trait EloquentBuilderTrait
 
             if (isset($includes)) {
                 if (!is_array($includes)) {
-                    throw InvalidArgumentException('Includes should be an array.');
+                    throw new InvalidArgumentException('Includes should be an array.');
                 }
 
                 $query->with($includes);
@@ -32,7 +32,11 @@ trait EloquentBuilderTrait
             }
 
             if (isset($sort)) {
-                $query->orderBy($sort);
+                if (!is_array($sort)) {
+                    throw new InvalidArgumentException('Sort should be an array.');
+                }
+
+                $this->applySorting($query, $sort);
             }
 
             if (isset($limit)) {
@@ -81,6 +85,21 @@ trait EloquentBuilderTrait
                     $query->where($filter['key'], $operator, $filter['value']);
                     break;
             }
+        }
+    }
+
+    private function applySorting(Builder $query, array $sorting)
+    {
+        foreach($sorting as $sortRule) {
+            if (is_array($sortRule)) {
+                $key = $sortRule['key'];
+                $direction = mb_strtolower($sortRule['direction']) === 'asc' ? 'ASC' : 'DESC';
+            } else {
+                $key = $sortRule;
+                $direction = 'ASC';
+            }
+
+            $query->orderBy($key, $direction);
         }
     }
 }

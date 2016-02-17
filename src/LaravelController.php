@@ -114,7 +114,7 @@ abstract class LaravelController extends Controller
 
         $this->defaults = array_merge([
             'includes' => [],
-            'sort' => null,
+            'sort' => [],
             'limit' => null,
             'page' => null,
             'mode' => 'embed',
