@@ -5,6 +5,7 @@ namespace Optimus\Api\Controller;
 use DB;
 use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 trait EloquentBuilderTrait
 {
@@ -14,7 +15,7 @@ trait EloquentBuilderTrait
      * @param  array  $options
      * @return Builder
      */
-    private function applyResourceOptions(Builder $query, array $options = [])
+    protected function applyResourceOptions(Builder $query, array $options = [])
     {
         if (!empty($options)) {
             extract($options);
@@ -28,7 +29,7 @@ trait EloquentBuilderTrait
             }
 
             if (isset($filter_groups)) {
-                $this->applyFilterGroups($query, $filter_groups);
+                $filterJoins = $this->applyFilterGroups($query, $filter_groups);
             }
 
             if (isset($sort)) {
@@ -36,7 +37,11 @@ trait EloquentBuilderTrait
                     throw new InvalidArgumentException('Sort should be an array.');
                 }
 
-                $this->applySorting($query, $sort);
+                if (!isset($filterJoins)) {
+                    $filterJoins = [];
+                }
+
+                $sortingJoins = $this->applySorting($query, $sort, $filterJoins);
             }
 
             if (isset($limit)) {
@@ -51,45 +56,104 @@ trait EloquentBuilderTrait
         return $query;
     }
 
-    private function applyFilterGroups(Builder $query, array $filterGroups = [])
+    protected function applyFilterGroups(Builder $query, array $filterGroups = [], array $previouslyJoined = [])
     {
+        $joins = [];
         foreach ($filterGroups as $group) {
+            $or = $group['or'];
             $filters = $group['filters'];
 
-            $query->where(function (Builder $query) use ($filters) {
+            $query->where(function (Builder $query) use ($filters, $or, &$joins) {
                 foreach ($filters as $filter) {
-                    $this->applyFilter($query, $filter);
+                    $this->applyFilter($query, $filter, $or, $joins);
                 }
             });
         }
+
+        foreach(array_diff($joins, $previouslyJoined) as $join) {
+            $this->joinRelatedModelIfExists($query, $join);
+        }
+
+        return $joins;
     }
 
-    private function applyFilter(Builder $query, array $filter)
+    protected function applyFilter(Builder $query, array $filter, $or = false, array &$joins)
     {
-        if ($filter['value'] === 'null' || $filter['value'] === '') {
-            $method = $filter['not'] ? 'NotNull' : 'Null';
+        // $value, $not, $key, $operator
+        extract($filter);
 
-            call_user_func([$query, $method], $filter['key']);
+        if ($value === 'null' || $value === '') {
+            $method = $not ? 'NotNull' : 'Null';
+
+            call_user_func([$query, $method], $key);
         } else {
-            switch($filter['operator']) {
+            $method = $or === true ? 'orWhere' : 'where';
+            $clauseOperator = null;
+
+            switch($operator) {
                 case 'ct':
-                    $query->where(
-                        $filter['key'],
-                        $filter['not'] ? 'NOT LIKE' : 'LIKE',
-                        '%'.$filter['value'].'%'
-                    );
+                case 'sw':
+                case 'ew':
+                    $valueString = [
+                        'ct' => '%'.$value.'%', // contains
+                        'ew' => '%'.$value, // starts with
+                        'sw' => $value.'%' // ends with
+                    ];
+
+                    $key = DB::raw(sprintf('CAST(%s AS TEXT)', $key));
+                    $clauseOperator = $not ? 'NOT LIKE' : 'LIKE';
+                    $value = $valueString[$clauseOperator];
                     break;
                 case 'eq':
                 default:
-                    $operator = $filter['not'] ? '!=' : '=';
-                    $query->where($filter['key'], $operator, $filter['value']);
+                    $clauseOperator = $not ? '!=' : '=';
                     break;
+                case 'gt':
+                    $clauseOperator = $not ? '<' : '>';
+                    break;
+                case 'lt':
+                    $clauseOperator = $not ? '>' : '<';
+                    break;
+                case 'in':
+                    if ($or === true) {
+                        $method = $not === true ? 'orWhereNotIn' : 'orWhereIn';
+                    } else {
+                        $method = $not === true ? 'whereNotIn' : 'whereIn';
+                    }
+                    break;
+            }
+
+            $customFilterMethod = $this->hasCustomMethod('filter', $key);
+            if ($customFilterMethod) {
+                call_user_func_array([$this, $customFilterMethod], [
+                    $query,
+                    $method,
+                    $clauseOperator,
+                    $value,
+                    $operator === 'in'
+                ]);
+
+                // column to join.
+                // trying to join within a nested where will get the join ignored.
+                $joins[] = $key;
+            } else {
+                // In operations do not have an operator
+                if ($operator === 'in') {
+                    call_user_func_array([$query, $method], [
+                        $key, $value
+                    ]);
+                } else {
+                    call_user_func_array([$query, $method], [
+                        $key, $clauseOperator, $value
+                    ]);
+                }
             }
         }
     }
 
-    private function applySorting(Builder $query, array $sorting)
+    protected function applySorting(Builder $query, array $sorting, array $previouslyJoined = [])
     {
+        $joins = [];
         foreach($sorting as $sortRule) {
             if (is_array($sortRule)) {
                 $key = $sortRule['key'];
@@ -99,7 +163,53 @@ trait EloquentBuilderTrait
                 $direction = 'ASC';
             }
 
-            $query->orderBy($key, $direction);
+            $customSortMethod = $this->hasCustomMethod('sort', $key);
+            if ($customSortMethod) {
+                $joins[] = $key;
+
+                call_user_func([$this, $customSortMethod], $query, $direction);
+            } else {
+                $query->orderBy($key, $direction);
+            }
+        }
+
+        foreach(array_diff($joins, $previouslyJoined) as $join) {
+            $this->joinRelatedModelIfExists($query, $join);
+        }
+
+        return $joins;
+    }
+
+    private function hasCustomMethod($type, $key)
+    {
+        $methodName = sprintf('%s%s', $type, Str::studly($key));
+        if (method_exists($this, $methodName)) {
+            return $methodName;
+        }
+
+        return false;
+    }
+
+    private function joinRelatedModelIfExists(Builder $query, $key)
+    {
+        $model = $query->getModel();
+
+        // relationship exists, join to make special sort
+        if (method_exists($model, $key)) {
+            $relationship = $model->$key();
+            $relatedModel = $relationship->getRelated();
+
+            // Join the related table
+            $query->join(
+                $relatedModel->getTable(),
+                $relationship->getForeignKey(),
+                '=',
+                $relationship->getQualifiedParentKeyName()
+            );
+
+            // Keep the join from overriding the result
+            $table = $model->getTable();
+            $query->select(sprintf('%s.*', $table));
         }
     }
 }

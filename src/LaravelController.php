@@ -84,21 +84,17 @@ abstract class LaravelController extends Controller
             }
 
             $filters = array_map(function($filter){
-                $explode = explode(':', $filter);
+                if (!isset($filter['not'])) {
+                    $filter['not'] = false;
+                }
 
-                $key = $explode[0];
-
-                preg_match('/^(!)?([a-zA-Z]{2})\((.+)\)$/', $explode[1], $matches);
-
-                return [
-                    'key'       => $key,
-                    'value'     => $matches[3],
-                    'operator'  => $matches[2],
-                    'not'       => $matches[1] === '!'
-                ];
+                return $filter;
             }, $group['filters']);
 
-            $return[] = ['filters' => $filters];
+            $return[] = [
+                'filters' => $filters,
+                'or' => isset($group['or']) ? $group['or'] : false
+            ];
         }
 
         return $return;
