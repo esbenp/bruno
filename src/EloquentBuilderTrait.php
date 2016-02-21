@@ -190,7 +190,6 @@ trait EloquentBuilderTrait
 
     private function hasCustomMethod($type, $key)
     {
-        \Log::info($key);
         $methodName = sprintf('%s%s', $type, Str::studly($key));
         if (method_exists($this, $methodName)) {
             return $methodName;
