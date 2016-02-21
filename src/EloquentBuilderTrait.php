@@ -89,6 +89,7 @@ trait EloquentBuilderTrait
         } else {
             $method = $or === true ? 'orWhere' : 'where';
             $clauseOperator = null;
+            $databaseField = null;
 
             switch($operator) {
                 case 'ct':
@@ -100,9 +101,9 @@ trait EloquentBuilderTrait
                         'sw' => $value.'%' // ends with
                     ];
 
-                    $key = DB::raw(sprintf('CAST(%s AS TEXT)', $key));
+                    $databaseField = DB::raw(sprintf('CAST(%s AS TEXT)', $key));
                     $clauseOperator = $not ? 'NOT LIKE' : 'LIKE';
-                    $value = $valueString[$clauseOperator];
+                    $value = $valueString[$operator];
                     break;
                 case 'eq':
                 default:
@@ -123,6 +124,13 @@ trait EloquentBuilderTrait
                     break;
             }
 
+            // If we do not assign database field, the customer filter method
+            // will fail when we execute it with parameters such as CAST(%s AS TEXT)
+            // key needs to be reserved
+            if (is_null($databaseField)) {
+                $databaseField = $key;
+            }
+
             $customFilterMethod = $this->hasCustomMethod('filter', $key);
             if ($customFilterMethod) {
                 call_user_func_array([$this, $customFilterMethod], [
@@ -140,11 +148,11 @@ trait EloquentBuilderTrait
                 // In operations do not have an operator
                 if ($operator === 'in') {
                     call_user_func_array([$query, $method], [
-                        $key, $value
+                        $databaseField, $value
                     ]);
                 } else {
                     call_user_func_array([$query, $method], [
-                        $key, $clauseOperator, $value
+                        $databaseField, $clauseOperator, $value
                     ]);
                 }
             }
@@ -182,6 +190,7 @@ trait EloquentBuilderTrait
 
     private function hasCustomMethod($type, $key)
     {
+        \Log::info($key);
         $methodName = sprintf('%s%s', $type, Str::studly($key));
         if (method_exists($this, $methodName)) {
             return $methodName;
