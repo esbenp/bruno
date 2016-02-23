@@ -41,6 +41,16 @@ abstract class LaravelController extends Controller
         return $architect->parseData($data, $options['modes'], $key);
     }
 
+    protected function parseSort(array $sort) {
+        return array_map(function($sort) {
+            if (!isset($sort['direction'])) {
+                $sort['direction'] = 'asc';
+            }
+
+            return $sort;
+        }, $sort);
+    }
+
     /**
      * Parse include strings into resource and modes
      * @param  array  $includes
@@ -118,7 +128,7 @@ abstract class LaravelController extends Controller
         ], $this->defaults);
 
         $includes = $this->parseIncludes($request->get('includes', $this->defaults['includes']));
-        $sort = $request->get('sort', $this->defaults['sort']);
+        $sort = $this->parseSort($request->get('sort', $this->defaults['sort']));
         $limit = $request->get('limit', $this->defaults['limit']);
         $page = $request->get('page', $this->defaults['page']);
         $filter_groups = $this->parseFilterGroups($request->get('filter_groups', $this->defaults['filter_groups']));
