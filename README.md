@@ -154,7 +154,44 @@ in descending order.
 
 ### Filtering
 
+Should be defined as an array of filter groups.
 
+**Filter groups**
+
+Property | Value type | Description
+-------- | ---------- | -----------
+or | boolean | Should the filters in this group be grouped by logical OR or AND operator
+filters | array | Array of filters (see syntax below)
+
+**Filters**
+
+Property | Value type | Description
+-------- | ---------- | -----------
+key | string | The property of the model to filter by
+value | mixed | The value to search for
+operator | string | The filter operator to use (see different types below)
+not | boolean | Negate the filter
+
+**Operators**
+
+Type | Description | Example
+---- | ----------- | -------
+ct | String contains | `ior` matches `Giordano Bruno` and `Giovanni`
+sw | Starts with | `Gior` matches `Giordano Bruno` but not `Giovanni`
+ew | Ends with | `uno` matches `Giordano Bruno` but not `Giovanni`
+eq | Equals | `Giordano Bruno` matches `Giordano Bruno` but not `Bruno`
+gt | Greater than | `1548` matches `1600` but not `1400`
+lt | Lesser than | `1600` matches `1548` but not `1700`
+in | In array | `['Giordano', 'Bruno']` matches `Giordano` and `Bruno` but not `Giovanni`
+
+**Special values**
+
+Value | Description
+----- | -----------
+null (string) | The property will be checked for NULL value
+(empty string) | The property will be checked for NULL value
+
+#### Custom filters
 
 ## Standards
 
