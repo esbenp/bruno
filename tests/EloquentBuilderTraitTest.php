@@ -1,7 +1,7 @@
 <?php
 
 use Mockery as m;
-use Optimus\Api\Controller\EloquentBuilderTrait;
+use Optimus\Bruno\EloquentBuilderTrait;
 
 class EloquentBuilderTraitTest extends Orchestra\Testbench\TestCase
 {

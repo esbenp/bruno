@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Collection;
-use Optimus\Api\Controller\LaravelController;
+use Optimus\Bruno\LaravelController;
 
 class Controller extends LaravelController
 {

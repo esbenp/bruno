@@ -1,16 +1,27 @@
-# Laravel API Controller
+# Bruno
 
-[![Latest Version](https://img.shields.io/github/release/esbenp/laravel-controller.svg?style=flat-square)](https://github.com/esbenp/laravel-controller/releases)
+[![Latest Version](https://img.shields.io/github/release/esbenp/bruno.svg?style=flat-square)](https://github.com/esbenp/bruno/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Build Status](https://img.shields.io/travis/esbenp/laravel-controller/master.svg?style=flat-square)](https://travis-ci.org/esbenp/laravel-controller)
-[![Coverage Status](https://img.shields.io/coveralls/esbenp/laravel-controller.svg?style=flat-square)](https://coveralls.io/github/esbenp/laravel-controller)
-[![Total Downloads](https://img.shields.io/packagist/dt/optimus/laravel-controller.svg?style=flat-square)](https://packagist.org/packages/optimus/laravel-controller)
+[![Build Status](https://img.shields.io/travis/esbenp/bruno/master.svg?style=flat-square)](https://travis-ci.org/esbenp/bruno)
+[![Coverage Status](https://img.shields.io/coveralls/esbenp/bruno.svg?style=flat-square)](https://coveralls.io/github/esbenp/bruno)
+[![Total Downloads](https://img.shields.io/packagist/dt/optimus/bruno.svg?style=flat-square)](https://packagist.org/packages/optimus/bruno)
+
+## Introduction
+
+A Laravel base controller class and a trait that will enable to add filtering, sorting, eager loading and pagination to your
+resource URLs.
+
+**Dedicated to Giordano Bruno**
+
+This package is named after my hero Giordano Bruno. A true visionary who dared to dream beyond what was thought possible.
+For his ideas and his refusal to renounce them he was burned to the stake in 1600.
+[I highly recommend this short cartoon on his life narrated by Neil deGrasse Tyson](https://vimeo.com/89241669).
 
 ## Functionality
 
-* Parse GET parameters for dynamic eager loading of related resources, sorting, pagination and limiting
+* Parse GET parameters for dynamic eager loading of related resources, sorting, pagination and filtering
 * Use [Optimus\Architect](https://github.com/esbenp/architect) for sideloading, id loading or embedded loading of related resources
-* ... [Ideas for new functionality is welcome here](https://github.com/esbenp/laravel-controller/issues/new)
+* ... [Ideas for new functionality is welcome here](https://github.com/esbenp/bruno/issues/new)
 
 ## Usage
 
@@ -85,7 +96,7 @@ Will return a collection of `Book`s and a eager loaded collection of their
 ## Installation
 
 ```bash
-composer require optimus/laravel-controller ~1.0
+composer require optimus/bruno ~1.0
 ```
 
 ## Standards
@@ -105,8 +116,8 @@ $ phpunit
 
 ## Contributing
 
-Please see [CONTRIBUTING](https://github.com/esbenp/laravel-controller/blob/master/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](https://github.com/esbenp/bruno/blob/master/CONTRIBUTING.md) for details.
 
 ## License
 
-The MIT License (MIT). Please see [License File](https://github.com/esbenp/laravel-controller/blob/master/LICENSE) for more information.
+The MIT License (MIT). Please see [License File](https://github.com/esbenp/bruno/blob/master/LICENSE) for more information.

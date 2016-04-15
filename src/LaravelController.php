@@ -1,6 +1,6 @@
 <?php
 
-namespace Optimus\Api\Controller;
+namespace Optimus\Bruno;
 
 use InvalidArgumentException;
 use Illuminate\Routing\Controller;

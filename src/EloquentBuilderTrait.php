@@ -1,6 +1,6 @@
 <?php
 
-namespace Optimus\Api\Controller;
+namespace Optimus\Bruno;
 
 use DB;
 use InvalidArgumentException;

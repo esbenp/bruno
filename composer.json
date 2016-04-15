@@ -1,8 +1,8 @@
 {
-    "name": "optimus/laravel-controller",
+    "name": "optimus/bruno",
     "autoload": {
         "psr-4": {
-            "Optimus\\Api\\Controller\\": "src/"
+            "Optimus\\Bruno\\": "src/"
         }
     },
     "require": {
