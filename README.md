@@ -19,9 +19,21 @@ For his ideas and his refusal to renounce them he was burned to the stake in 160
 
 ## Functionality
 
-* Parse GET parameters for dynamic eager loading of related resources, sorting, pagination and filtering
+* Parse GET parameters for dynamic eager loading of related resources, sorting and pagination
+* Advanced filtering of resources using filter groups
 * Use [Optimus\Architect](https://github.com/esbenp/architect) for sideloading, id loading or embedded loading of related resources
 * ... [Ideas for new functionality is welcome here](https://github.com/esbenp/bruno/issues/new)
+
+## Tutorial
+
+To get started with Bruno I highly recommend my article on
+[resource controls in Laravel APIs](http://esbenp.github.io/2016/04/15/modern-rest-api-laravel-part-2/)
+
+## Installation
+
+```bash
+composer require optimus/bruno ~1.0
+```
 
 ## Usage
 
@@ -37,11 +49,12 @@ Book 1-----n Author
 Key | Type | Description
 --- | ---- | -----------
 Includes | array | Array of related resources to load, e.g. ['author', 'publisher', 'publisher.books']
-Sort | string | Property to sort by, e.g. 'title'
+Sort | array | Property to sort by, e.g. 'title'
 Limit | integer | Limit of resources to return
 Page | integer | For use with limit
+Filter_groups | array | Array of filter groups. See below for syntax.
 
-### Usage
+### Implementation
 
 ```php
 <?php
@@ -76,15 +89,23 @@ class BookController extends LaravelController
 }
 ```
 
-Now books' relations can be dynamically loaded using GET parameters.
+## Syntax documentation
 
-`/books?includes[]=author&sort=title&limit=5`
+### Eager loading
 
-Will return a collection of 5 `Book`s eager loaded with `Author`, sorted by title.
+**Simple eager load**
+
+`/books?includes[]=author`
+
+Will return a collection of 5 `Book`s eager loaded with `Author`.
+
+**IDs mode**
 
 `/books?includes[]=author:ids`
 
 Will return a collection of `Book`s eager loaded with the ID of their `Author`
+
+**Sideload mode**
 
 `/books?includes[]=author:sideload`
 
@@ -93,11 +114,47 @@ Will return a collection of `Book`s and a eager loaded collection of their
 
 [See mere about eager loading types in Optimus\Architect's README](https://github.com/esbenp/architect)
 
-## Installation
+### Pagination
 
-```bash
-composer require optimus/bruno ~1.0
+Two parameters are available: `limit` and `page`. `limit` will determine the number of
+records per page and `page` will determine the current page.
+
+`/books?limit=10&page=3`
+
+Will return books number 30-40.
+
+### Sorting
+
+Should be defined as an array of sorting rules. They will be applied in the
+order of which they are defined.
+
+**Sorting rules**
+
+Property | Value type | Description
+-------- | ---------- | -----------
+key | string | The property of the model to sort by
+direction | ASC or DESC | Which direction to sort the property by
+
+**Example**
+
+```json
+[
+    {
+        "key": "title",
+        "direction": "ASC"
+    }, {
+        "key": "year",
+        "direction": "DESC"
+    }
+]
 ```
+
+Will result in the books being sorted by title in ascending order and then year
+in descending order.
+
+### Filtering
+
+
 
 ## Standards
 
