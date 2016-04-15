@@ -97,8 +97,8 @@ trait EloquentBuilderTrait
                 case 'ew':
                     $valueString = [
                         'ct' => '%'.$value.'%', // contains
-                        'ew' => '%'.$value, // starts with
-                        'sw' => $value.'%' // ends with
+                        'ew' => '%'.$value, // ends with
+                        'sw' => $value.'%' // starts with
                     ];
 
                     $databaseField = DB::raw(sprintf('CAST(%s AS TEXT)', $key));

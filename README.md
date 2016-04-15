@@ -41,7 +41,7 @@ The examples will be of a hypothetical resource endpoint `/books` which will ret
 each belonging to a `Author`.
 
 ```
-Book 1-----n Author
+Book n ----- 1 Author
 ```
 
 ### Available query parameters
@@ -167,7 +167,7 @@ filters | array | Array of filters (see syntax below)
 
 Property | Value type | Description
 -------- | ---------- | -----------
-key | string | The property of the model to filter by
+key | string | The property of the model to filter by (can also be custom filter)
 value | mixed | The value to search for
 operator | string | The filter operator to use (see different types below)
 not | boolean | Negate the filter
@@ -192,6 +192,110 @@ null (string) | The property will be checked for NULL value
 (empty string) | The property will be checked for NULL value
 
 #### Custom filters
+
+Remember our relationship `Books n ----- 1 Author`. Imagine your want to
+filter books by `Author` name.
+
+```json
+[
+    {
+        "filters": [
+            {
+                "key": "author",
+                "value": "Optimus",
+                "operator": "sw"
+            }
+        ]
+    }
+]
+```
+
+Now that is all good, however there is no `author` property on our
+model since it is a relationship. This would cause an error since
+Eloquent would try to use a where clause on the non-existant `author`
+property. We can fix this by implementing a custom filter. Where
+ever you are using the `EloquentBuilderTrait` implement a function named
+`filterAuthor`
+
+```php
+public function filterAuthor(Builder $query, $method, $clauseOperator, $value, $in)
+{
+    if ($in) {
+        call_user_func([$query, $method], 'authors.name', $value);
+    } else {
+        call_user_func([$query, $method], 'authors.name', $clauseOperator, $value);
+    }
+}
+```
+
+*Note:* It is important to note that a custom filter will look for a relationship with
+the same name of the property. E.g. if trying to use a custom filter for a property
+named `author` then Bruno will try to eagerload the `author` relationship from the
+`Book` model.
+
+**Custom filter function**
+
+Argument | Description
+-------- | -----------
+$query | The Eloquent query builder
+$method | The where method to use (`where`, `orWhere`, `whereIn`, `orWhereIn` etc.)
+$clauseOperator | Can operator to use for non-in wheres (`!=`, `=`, `>` etc.)
+$value | The filter value
+$in | Boolean indicating whether or not this is an in-array filter
+
+#### Examples
+
+```json
+[
+    {
+        "or": true,
+        "filters": [
+            {
+                "key": "author",
+                "value": "Optimus",
+                "operator": "sw"
+            },
+            {
+                "key": "author",
+                "value": "Prime",
+                "operator": "ew"
+            }
+        ]
+    }
+]
+```
+
+Books with authors whoose name start with `Optimus` or ends with `Prime`.
+
+```json
+[
+    {
+        "filters": [
+            {
+                "key": "author",
+                "value": "Brian",
+                "operator": "sw"
+            }
+        ]
+    },
+    {
+        "filters": [
+            {
+                "key": "year",
+                "value": 1990,
+                "operator": "gt"
+            },
+            {
+                "key": "year",
+                "value": 2000,
+                "operator": "lt"
+            }
+        ]
+    }
+]
+```
+
+Books with authors whoose name start with Brian and which were published between years 1990 and 2000.
 
 ## Standards
 
