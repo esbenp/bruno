@@ -83,7 +83,7 @@ trait EloquentBuilderTrait
         extract($filter);
 
         if ($value === 'null' || $value === '') {
-            $method = $not ? 'NotNull' : 'Null';
+            $method = $not ? 'WhereNotNull' : 'WhereNull';
 
             call_user_func([$query, $method], $key);
         } else {
