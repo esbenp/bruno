@@ -3,6 +3,8 @@
 namespace Optimus\Bruno;
 
 use DB;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -85,11 +87,12 @@ trait EloquentBuilderTrait
         if ($value === 'null' || $value === '') {
             $method = $not ? 'WhereNotNull' : 'WhereNull';
 
-            call_user_func([$query, $method], $key);
+            call_user_func([$query, $method], sprintf('%s.%s', $table, $key));
         } else {
             $method = $or === true ? 'orWhere' : 'where';
             $clauseOperator = null;
             $databaseField = null;
+            $table = $query->getModel()->getTable();
 
             switch($operator) {
                 case 'ct':
@@ -101,7 +104,7 @@ trait EloquentBuilderTrait
                         'sw' => $value.'%' // starts with
                     ];
 
-                    $databaseField = DB::raw(sprintf('CAST(%s AS TEXT)', $key));
+                    $databaseField = DB::raw(sprintf('CAST(%s.%s AS TEXT)', $table, $key));
                     $clauseOperator = $not ? 'NOT LIKE' : 'LIKE';
                     $value = $valueString[$operator];
                     break;
@@ -128,7 +131,7 @@ trait EloquentBuilderTrait
             // will fail when we execute it with parameters such as CAST(%s AS TEXT)
             // key needs to be reserved
             if (is_null($databaseField)) {
-                $databaseField = $key;
+                $databaseField = sprintf('%s.%s', $table, $key);
             }
 
             $customFilterMethod = $this->hasCustomMethod('filter', $key);
@@ -204,18 +207,42 @@ trait EloquentBuilderTrait
 
         // relationship exists, join to make special sort
         if (method_exists($model, $key)) {
-            $relationship = $model->$key();
-            $relatedModel = $relationship->getRelated();
+            $relation = $model->$key();
+            $type = 'inner';
 
-            // Join the related table
-            $query->join(
-                $relatedModel->getTable(),
-                $relationship->getForeignKey(),
-                '=',
-                $relationship->getQualifiedParentKeyName()
-            );
+            if ($relation instanceof BelongsTo) {
+                $query->join(
+                    $relation->getRelated()->getTable(),
+                    $model->getTable().'.'.$relation->getForeignKey(),
+                    '=',
+                    $relation->getRelated()->getTable().'.'.$relation->getOtherKey(),
+                    $type
+                );
+            } elseif ($relation instanceof BelongsToMany) {
+                $query->join(
+                    $relation->getTable(),
+                    $relation->getQualifiedParentKeyName(),
+                    '=',
+                    $relation->getForeignKey(),
+                    $type
+                );
+                $query->join(
+                    $relation->getRelated()->getTable(),
+                    $relation->getRelated()->getTable().'.'.$relation->getRelated()->getKeyName(),
+                    '=',
+                    $relation->getOtherKey(),
+                    $type
+                );
+            } else {
+                $query->join(
+                    $relation->getRelated()->getTable(),
+                    $relation->getQualifiedParentKeyName(),
+                    '=',
+                    $relation->getForeignKey(),
+                    $type
+                );
+            }
 
-            // Keep the join from overriding the result
             $table = $model->getTable();
             $query->select(sprintf('%s.*', $table));
         }
