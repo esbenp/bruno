@@ -84,6 +84,8 @@ trait EloquentBuilderTrait
         // $value, $not, $key, $operator
         extract($filter);
 
+        $table = $query->getModel()->getTable();
+
         if ($value === 'null' || $value === '') {
             $method = $not ? 'WhereNotNull' : 'WhereNull';
 
@@ -92,7 +94,6 @@ trait EloquentBuilderTrait
             $method = $or === true ? 'orWhere' : 'where';
             $clauseOperator = null;
             $databaseField = null;
-            $table = $query->getModel()->getTable();
 
             switch($operator) {
                 case 'ct':
