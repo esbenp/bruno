@@ -116,7 +116,7 @@ abstract class LaravelController extends Controller
      */
     protected function parseResourceOptions()
     {
-        $request = $this->getRouter()->getCurrentRequest();
+        $request = request();
 
         $this->defaults = array_merge([
             'includes' => [],
