@@ -106,7 +106,7 @@ trait EloquentBuilderTrait
                     ];
 
                     $databaseField = DB::raw(sprintf('CAST(%s.%s AS TEXT)', $table, $key));
-                    $clauseOperator = $not ? 'NOT LIKE' : 'LIKE';
+                    $clauseOperator = $not ? 'NOT ILIKE' : 'ILIKE';
                     $value = $valueString[$operator];
                     break;
                 case 'eq':
