@@ -4,6 +4,7 @@ namespace Optimus\Bruno;
 
 use InvalidArgumentException;
 use Illuminate\Routing\Controller;
+use Illuminate\Routing\Router;
 use Illuminate\Http\JsonResponse;
 use Optimus\Architect\Architect;
 
@@ -116,7 +117,7 @@ abstract class LaravelController extends Controller
      */
     protected function parseResourceOptions()
     {
-        $request = $this->getRouter()->getCurrentRequest();
+        $request = app()->make(Router::class)->getCurrentRequest();
 
         $this->defaults = array_merge([
             'includes' => [],
