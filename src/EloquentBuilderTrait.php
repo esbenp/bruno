@@ -91,7 +91,7 @@ trait EloquentBuilderTrait
 
             call_user_func([$query, $method], sprintf('%s.%s', $table, $key));
         } else {
-            $method = $or === true ? 'orWhere' : 'where';
+            $method = filter_var($or, FILTER_VALIDATE_BOOLEAN) ? 'orWhere' : 'where';
             $clauseOperator = null;
             $databaseField = null;
 
