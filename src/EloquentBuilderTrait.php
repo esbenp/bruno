@@ -116,6 +116,9 @@ trait EloquentBuilderTrait
                 case 'gt':
                     $clauseOperator = $not ? '<' : '>';
                     break;
+                case 'bt':
+                    $clauseOperator = 'between';
+                    break;
                 case 'lt':
                     $clauseOperator = $not ? '>' : '<';
                     break;
