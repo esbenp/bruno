@@ -138,6 +138,10 @@ abstract class LaravelController extends Controller
             throw new InvalidArgumentException('page option and limit option must be numbers');
         }
         
+        if ($limit < 1) {
+            throw new InvalidArgumentException('limit option must be equal to or greater than 1');
+        }
+        
         if ($page !== null && $limit === null) {
             throw new InvalidArgumentException('Cannot use page option without limit option');
         }
