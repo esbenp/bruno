@@ -134,6 +134,10 @@ abstract class LaravelController extends Controller
         $page = $request->get('page', $this->defaults['page']);
         $filter_groups = $this->parseFilterGroups($request->get('filter_groups', $this->defaults['filter_groups']));
 
+        if (!ctype_digit($limit) || !ctype_digit($page)) {
+            throw new InvalidArgumentException('page option and limit option must be numbers');
+        }
+        
         if ($page !== null && $limit === null) {
             throw new InvalidArgumentException('Cannot use page option without limit option');
         }
