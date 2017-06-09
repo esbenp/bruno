@@ -133,9 +133,19 @@ abstract class LaravelController extends Controller
         $limit = $request->get('limit', $this->defaults['limit']);
         $page = $request->get('page', $this->defaults['page']);
         $filter_groups = $this->parseFilterGroups($request->get('filter_groups', $this->defaults['filter_groups']));
-
+        
         if ($page !== null && $limit === null) {
             throw new InvalidArgumentException('Cannot use page option without limit option');
+        }
+        
+        if ($page !== null || $limit !== null) {
+            if (!ctype_digit($limit) || !ctype_digit($page)) {
+                throw new InvalidArgumentException('page option and limit option must be numbers');
+            }
+
+            if ($limit < 1) {
+                throw new InvalidArgumentException('limit option must be equal to or greater than 1');
+            }
         }
 
         return [
