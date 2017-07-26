@@ -20,40 +20,42 @@ trait EloquentBuilderTrait
      */
     protected function applyResourceOptions(Builder $queryBuilder, array $options = [])
     {
-        if (!empty($options)) {
-            extract($options);
+        if (empty($options)) {
+            return $queryBuilder;
+        }
 
-            if (isset($includes)) {
-                if (!is_array($includes)) {
-                    throw new InvalidArgumentException('Includes should be an array.');
-                }
+        extract($options);
 
-                $queryBuilder->with($includes);
+        if (isset($includes)) {
+            if (!is_array($includes)) {
+                throw new InvalidArgumentException('Includes should be an array.');
             }
 
-            if (isset($filter_groups)) {
-                $filterJoins = $this->applyFilterGroups($queryBuilder, $filter_groups);
+            $queryBuilder->with($includes);
+        }
+
+        if (isset($filter_groups)) {
+            $filterJoins = $this->applyFilterGroups($queryBuilder, $filter_groups);
+        }
+
+        if (isset($sort)) {
+            if (!is_array($sort)) {
+                throw new InvalidArgumentException('Sort should be an array.');
             }
 
-            if (isset($sort)) {
-                if (!is_array($sort)) {
-                    throw new InvalidArgumentException('Sort should be an array.');
-                }
-
-                if (!isset($filterJoins)) {
-                    $filterJoins = [];
-                }
-
-                $sortingJoins = $this->applySorting($queryBuilder, $sort, $filterJoins);
+            if (!isset($filterJoins)) {
+                $filterJoins = [];
             }
 
-            if (isset($limit)) {
-                $queryBuilder->limit($limit);
-            }
+            $sortingJoins = $this->applySorting($queryBuilder, $sort, $filterJoins);
+        }
 
-            if (isset($page)) {
-                $queryBuilder->offset($page*$limit);
-            }
+        if (isset($limit)) {
+            $queryBuilder->limit($limit);
+        }
+
+        if (isset($page)) {
+            $queryBuilder->offset($page*$limit);
         }
 
         return $queryBuilder;
