@@ -181,7 +181,9 @@ sw | Starts with | `Gior` matches `Giordano Bruno` but not `Giovanni`
 ew | Ends with | `uno` matches `Giordano Bruno` but not `Giovanni`
 eq | Equals | `Giordano Bruno` matches `Giordano Bruno` but not `Bruno`
 gt | Greater than | `1548` matches `1600` but not `1400`
+gte| Greater than or equalTo | `1548` matches `1548` and above
 lt | Lesser than | `1600` matches `1548` but not `1700`
+lte | Lesser than or equalTo | `1600` matches `1600` and below
 in | In array | `['Giordano', 'Bruno']` matches `Giordano` and `Bruno` but not `Giovanni`
 
 **Special values**
