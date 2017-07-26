@@ -59,6 +59,12 @@ trait EloquentBuilderTrait
         return $queryBuilder;
     }
 
+    /**
+     * @param Builder $queryBuilder
+     * @param array $filterGroups
+     * @param array $previouslyJoined
+     * @return array
+     */
     protected function applyFilterGroups(Builder $queryBuilder, array $filterGroups = [], array $previouslyJoined = [])
     {
         $joins = [];
@@ -80,6 +86,12 @@ trait EloquentBuilderTrait
         return $joins;
     }
 
+    /**
+     * @param Builder $queryBuilder
+     * @param array $filter
+     * @param bool|false $or
+     * @param array $joins
+     */
     protected function applyFilter(Builder $queryBuilder, array $filter, $or = false, array &$joins)
     {
         // $value, $not, $key, $operator
@@ -170,6 +182,12 @@ trait EloquentBuilderTrait
         }
     }
 
+    /**
+     * @param Builder $queryBuilder
+     * @param array $sorting
+     * @param array $previouslyJoined
+     * @return array
+     */
     protected function applySorting(Builder $queryBuilder, array $sorting, array $previouslyJoined = [])
     {
         $joins = [];
@@ -199,6 +217,11 @@ trait EloquentBuilderTrait
         return $joins;
     }
 
+    /**
+     * @param $type
+     * @param $key
+     * @return bool|string
+     */
     private function hasCustomMethod($type, $key)
     {
         $methodName = sprintf('%s%s', $type, Str::studly($key));
@@ -209,6 +232,10 @@ trait EloquentBuilderTrait
         return false;
     }
 
+    /**
+     * @param Builder $queryBuilder
+     * @param $key
+     */
     private function joinRelatedModelIfExists(Builder $queryBuilder, $key)
     {
         $model = $queryBuilder->getModel();
