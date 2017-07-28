@@ -31,8 +31,14 @@ To get started with Bruno I highly recommend my article on
 
 ## Installation
 
+For Laravel 5.3 and below
 ```bash
-composer require optimus/bruno ~1.0
+composer require optimus/bruno ~2.0
+```
+
+For Laravel 5.4 and above
+```bash
+composer require optimus/bruno ~3.0
 ```
 
 ## Usage
@@ -181,9 +187,9 @@ sw | Starts with | `Gior` matches `Giordano Bruno` but not `Giovanni`
 ew | Ends with | `uno` matches `Giordano Bruno` but not `Giovanni`
 eq | Equals | `Giordano Bruno` matches `Giordano Bruno` but not `Bruno`
 gt | Greater than | `1548` matches `1600` but not `1400`
-gte| Greater than or equalTo | `1548` matches `1548` and above
+gte| Greater than or equalTo | `1548` matches `1548` and above (ony for Laravel 5.4 and above)
+lte | Lesser than or equalTo | `1600` matches `1600` and below (ony for Laravel 5.4 and above)
 lt | Lesser than | `1600` matches `1548` but not `1700`
-lte | Lesser than or equalTo | `1600` matches `1600` and below
 in | In array | `['Giordano', 'Bruno']` matches `Giordano` and `Bruno` but not `Giovanni`
 
 **Special values**

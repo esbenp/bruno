@@ -5,7 +5,6 @@ namespace Optimus\Bruno;
 use DB;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Facades\Config;
 use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -99,7 +98,7 @@ trait EloquentBuilderTrait
         // $value, $not, $key, $operator
         extract($filter);
 
-        $dbType = Config::get('database.default');
+        $dbType = $queryBuilder->getConnection()->getDriverName();
 
         $table = $queryBuilder->getModel()->getTable();
 
