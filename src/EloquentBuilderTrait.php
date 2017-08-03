@@ -13,59 +13,67 @@ trait EloquentBuilderTrait
 {
     /**
      * Apply resource options to a query builder
-     * @param  Builder $query
+     * @param  Builder $queryBuilder
      * @param  array  $options
      * @return Builder
      */
-    protected function applyResourceOptions(Builder $query, array $options = [])
+    protected function applyResourceOptions(Builder $queryBuilder, array $options = [])
     {
-        if (!empty($options)) {
-            extract($options);
-
-            if (isset($includes)) {
-                if (!is_array($includes)) {
-                    throw new InvalidArgumentException('Includes should be an array.');
-                }
-
-                $query->with($includes);
-            }
-
-            if (isset($filter_groups)) {
-                $filterJoins = $this->applyFilterGroups($query, $filter_groups);
-            }
-
-            if (isset($sort)) {
-                if (!is_array($sort)) {
-                    throw new InvalidArgumentException('Sort should be an array.');
-                }
-
-                if (!isset($filterJoins)) {
-                    $filterJoins = [];
-                }
-
-                $sortingJoins = $this->applySorting($query, $sort, $filterJoins);
-            }
-
-            if (isset($limit)) {
-                $query->limit($limit);
-            }
-
-            if (isset($page)) {
-                $query->offset($page*$limit);
-            }
+        if (empty($options)) {
+            return $queryBuilder;
         }
 
-        return $query;
+        extract($options);
+
+        if (isset($includes)) {
+            if (!is_array($includes)) {
+                throw new InvalidArgumentException('Includes should be an array.');
+            }
+
+            $queryBuilder->with($includes);
+        }
+
+        if (isset($filter_groups)) {
+            $filterJoins = $this->applyFilterGroups($queryBuilder, $filter_groups);
+        }
+
+        if (isset($sort)) {
+            if (!is_array($sort)) {
+                throw new InvalidArgumentException('Sort should be an array.');
+            }
+
+            if (!isset($filterJoins)) {
+                $filterJoins = [];
+            }
+
+            $sortingJoins = $this->applySorting($queryBuilder, $sort, $filterJoins);
+        }
+
+        if (isset($limit)) {
+            $queryBuilder->limit($limit);
+        }
+
+        if (isset($page)) {
+            $queryBuilder->offset($page*$limit);
+        }
+
+        return $queryBuilder;
     }
 
-    protected function applyFilterGroups(Builder $query, array $filterGroups = [], array $previouslyJoined = [])
+    /**
+     * @param Builder $queryBuilder
+     * @param array $filterGroups
+     * @param array $previouslyJoined
+     * @return array
+     */
+    protected function applyFilterGroups(Builder $queryBuilder, array $filterGroups = [], array $previouslyJoined = [])
     {
         $joins = [];
         foreach ($filterGroups as $group) {
             $or = $group['or'];
             $filters = $group['filters'];
 
-            $query->where(function (Builder $query) use ($filters, $or, &$joins) {
+            $queryBuilder->where(function (Builder $query) use ($filters, $or, &$joins) {
                 foreach ($filters as $filter) {
                     $this->applyFilter($query, $filter, $or, $joins);
                 }
@@ -73,25 +81,33 @@ trait EloquentBuilderTrait
         }
 
         foreach(array_diff($joins, $previouslyJoined) as $join) {
-            $this->joinRelatedModelIfExists($query, $join);
+            $this->joinRelatedModelIfExists($queryBuilder, $join);
         }
 
         return $joins;
     }
 
-    protected function applyFilter(Builder $query, array $filter, $or = false, array &$joins)
+    /**
+     * @param Builder $queryBuilder
+     * @param array $filter
+     * @param bool|false $or
+     * @param array $joins
+     */
+    protected function applyFilter(Builder $queryBuilder, array $filter, $or = false, array &$joins)
     {
         // $value, $not, $key, $operator
         extract($filter);
 
-        $table = $query->getModel()->getTable();
+        $dbType = $queryBuilder->getConnection()->getDriverName();
+
+        $table = $queryBuilder->getModel()->getTable();
 
         if ($value === 'null' || $value === '') {
             $method = $not ? 'WhereNotNull' : 'WhereNull';
 
-            call_user_func([$query, $method], sprintf('%s.%s', $table, $key));
+            call_user_func([$queryBuilder, $method], sprintf('%s.%s', $table, $key));
         } else {
-            $method = $or === true ? 'orWhere' : 'where';
+            $method = filter_var($or, FILTER_VALIDATE_BOOLEAN) ? 'orWhere' : 'where';
             $clauseOperator = null;
             $databaseField = null;
 
@@ -105,8 +121,9 @@ trait EloquentBuilderTrait
                         'sw' => $value.'%' // starts with
                     ];
 
-                    $databaseField = DB::raw(sprintf('CAST(%s.%s AS TEXT)', $table, $key));
-                    $clauseOperator = $not ? 'NOT LIKE' : 'LIKE';
+                    $castToText = (($dbType === 'postgres') ? 'TEXT' : 'CHAR');
+                    $databaseField = DB::raw(sprintf('CAST(%s.%s AS ' . $castToText . ')', $table, $key));
+                    $clauseOperator = ($not ? 'NOT':'') . (($dbType === 'postgres') ? 'ILIKE' : 'LIKE');
                     $value = $valueString[$operator];
                     break;
                 case 'eq':
@@ -115,6 +132,12 @@ trait EloquentBuilderTrait
                     break;
                 case 'gt':
                     $clauseOperator = $not ? '<' : '>';
+                    break;
+                case 'gte':
+                    $clauseOperator = $not ? '<' : '>=';
+                    break;
+                case 'lte':
+                    $clauseOperator = $not ? '>' : '<=';
                     break;
                 case 'lt':
                     $clauseOperator = $not ? '>' : '<';
@@ -138,7 +161,7 @@ trait EloquentBuilderTrait
             $customFilterMethod = $this->hasCustomMethod('filter', $key);
             if ($customFilterMethod) {
                 call_user_func_array([$this, $customFilterMethod], [
-                    $query,
+                    $queryBuilder,
                     $method,
                     $clauseOperator,
                     $value,
@@ -151,11 +174,11 @@ trait EloquentBuilderTrait
             } else {
                 // In operations do not have an operator
                 if ($operator === 'in') {
-                    call_user_func_array([$query, $method], [
+                    call_user_func_array([$queryBuilder, $method], [
                         $databaseField, $value
                     ]);
                 } else {
-                    call_user_func_array([$query, $method], [
+                    call_user_func_array([$queryBuilder, $method], [
                         $databaseField, $clauseOperator, $value
                     ]);
                 }
@@ -163,7 +186,13 @@ trait EloquentBuilderTrait
         }
     }
 
-    protected function applySorting(Builder $query, array $sorting, array $previouslyJoined = [])
+    /**
+     * @param Builder $queryBuilder
+     * @param array $sorting
+     * @param array $previouslyJoined
+     * @return array
+     */
+    protected function applySorting(Builder $queryBuilder, array $sorting, array $previouslyJoined = [])
     {
         $joins = [];
         foreach($sorting as $sortRule) {
@@ -179,19 +208,24 @@ trait EloquentBuilderTrait
             if ($customSortMethod) {
                 $joins[] = $key;
 
-                call_user_func([$this, $customSortMethod], $query, $direction);
+                call_user_func([$this, $customSortMethod], $queryBuilder, $direction);
             } else {
-                $query->orderBy($key, $direction);
+                $queryBuilder->orderBy($key, $direction);
             }
         }
 
         foreach(array_diff($joins, $previouslyJoined) as $join) {
-            $this->joinRelatedModelIfExists($query, $join);
+            $this->joinRelatedModelIfExists($queryBuilder, $join);
         }
 
         return $joins;
     }
 
+    /**
+     * @param $type
+     * @param $key
+     * @return bool|string
+     */
     private function hasCustomMethod($type, $key)
     {
         $methodName = sprintf('%s%s', $type, Str::studly($key));
@@ -202,9 +236,13 @@ trait EloquentBuilderTrait
         return false;
     }
 
-    private function joinRelatedModelIfExists(Builder $query, $key)
+    /**
+     * @param Builder $queryBuilder
+     * @param $key
+     */
+    private function joinRelatedModelIfExists(Builder $queryBuilder, $key)
     {
-        $model = $query->getModel();
+        $model = $queryBuilder->getModel();
 
         // relationship exists, join to make special sort
         if (method_exists($model, $key)) {
@@ -212,40 +250,40 @@ trait EloquentBuilderTrait
             $type = 'inner';
 
             if ($relation instanceof BelongsTo) {
-                $query->join(
+                $queryBuilder->join(
                     $relation->getRelated()->getTable(),
-                    $model->getTable().'.'.$relation->getForeignKey(),
+                    $model->getTable().'.'.$relation->getQualifiedForeignKeyName(),
                     '=',
-                    $relation->getRelated()->getTable().'.'.$relation->getOtherKey(),
+                    $relation->getRelated()->getTable().'.'.$relation->getOwnerKey(),
                     $type
                 );
             } elseif ($relation instanceof BelongsToMany) {
-                $query->join(
+                $queryBuilder->join(
                     $relation->getTable(),
                     $relation->getQualifiedParentKeyName(),
                     '=',
-                    $relation->getForeignKey(),
+                    $relation->getQualifiedForeignKeyName(),
                     $type
                 );
-                $query->join(
+                $queryBuilder->join(
                     $relation->getRelated()->getTable(),
                     $relation->getRelated()->getTable().'.'.$relation->getRelated()->getKeyName(),
                     '=',
-                    $relation->getOtherKey(),
+                    $relation->getQualifiedRelatedKeyName(),
                     $type
                 );
             } else {
-                $query->join(
+                $queryBuilder->join(
                     $relation->getRelated()->getTable(),
                     $relation->getQualifiedParentKeyName(),
                     '=',
-                    $relation->getForeignKey(),
+                    $relation->getQualifiedForeignKeyName(),
                     $type
                 );
             }
 
             $table = $model->getTable();
-            $query->select(sprintf('%s.*', $table));
+            $queryBuilder->select(sprintf('%s.*', $table));
         }
     }
 }
