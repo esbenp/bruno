@@ -2,7 +2,9 @@
 
 namespace Optimus\Bruno;
 
+use JsonSerializable;
 use InvalidArgumentException;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\Router;
 use Illuminate\Http\JsonResponse;
@@ -10,6 +12,10 @@ use Optimus\Architect\Architect;
 
 abstract class LaravelController extends Controller
 {
+    /**
+     * Defaults
+     * @var array
+     */
     protected $defaults = [];
 
     /**
@@ -37,11 +43,16 @@ abstract class LaravelController extends Controller
      */
     protected function parseData($data, array $options, $key = null)
     {
-        $architect = new Architect;
+        $architect = new Architect();
 
         return $architect->parseData($data, $options['modes'], $key);
     }
 
+    /**
+     * Page sort
+     * @param array $sort
+     * @return array
+     */
     protected function parseSort(array $sort) {
         return array_map(function($sort) {
             if (!isset($sort['direction'])) {
@@ -82,7 +93,7 @@ abstract class LaravelController extends Controller
      * Parse filter group strings into filters
      * Filters are formatted as key:operator(value)
      * Example: name:eq(esben)
-     * @param  array  $filters
+     * @param  array  $filter_groups
      * @return array
      */
     protected function parseFilterGroups(array $filter_groups)
