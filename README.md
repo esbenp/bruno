@@ -306,6 +306,51 @@ Books with authors whoose name start with `Optimus` or ends with `Prime`.
 
 Books with authors whoose name start with Brian and which were published between years 1990 and 2000.
 
+### Optional Shorthand Filtering Syntax (Shorthand)
+Filters may be optionally expressed in Shorthand, which takes the a given filter
+array[key, operator, value, not(optional)] and builds a verbose filter array upon evaluation.
+
+For example, this group of filters (Verbose)
+```json
+[
+    {
+        "or": false,
+        "filters": [
+            {
+                "key": "author",
+                "value": "Optimus",
+                "operator": "sw"
+            },
+            {
+                "key": "author",
+                "value": "Prime",
+                "operator": "ew"
+            }
+            {
+                "key": "deleted_at",
+                "value": null,
+                "operator": "eq",
+                "not": true
+            }
+        ]
+    }
+]
+```
+May be expressed in this manner (Shorthand)
+```json
+[
+    {
+        "or": false,
+        "filters": [
+            ["author", "sw" "Optimus"],
+            ["author", "ew" "Prime"],
+            ["deleted_at", "eq" null, true]
+        ]
+    }
+]
+```
+
+
 ## Standards
 
 This package is compliant with [PSR-1], [PSR-2] and [PSR-4]. If you notice compliance oversights,
