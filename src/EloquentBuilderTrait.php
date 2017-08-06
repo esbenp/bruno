@@ -57,6 +57,10 @@ trait EloquentBuilderTrait
             $queryBuilder->offset($page*$limit);
         }
 
+        if (isset($distinct)) {
+            $query->distinct();
+        }
+
         return $queryBuilder;
     }
 
