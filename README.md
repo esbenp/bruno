@@ -191,6 +191,7 @@ gte| Greater than or equalTo | `1548` matches `1548` and above (ony for Laravel 
 lte | Lesser than or equalTo | `1600` matches `1600` and below (ony for Laravel 5.4 and above)
 lt | Lesser than | `1600` matches `1548` but not `1700`
 in | In array | `['Giordano', 'Bruno']` matches `Giordano` and `Bruno` but not `Giovanni`
+bt | Between | `[1, 10]` matches `5` and `7` but not `11`
 
 **Special values**
 

@@ -149,6 +149,13 @@ trait EloquentBuilderTrait
                         $method = $not === true ? 'whereNotIn' : 'whereIn';
                     }
                     break;
+                case 'bt':
+                    if ($or === true) {
+                        $method = $not === true ? 'orWhereNotBetween' : 'orWhereBetween';
+                    } else {
+                        $method = $not === true ? 'whereNotBetween' : 'whereBetween';
+                    }
+                    break;
             }
 
             // If we do not assign database field, the customer filter method
@@ -173,7 +180,7 @@ trait EloquentBuilderTrait
                 $joins[] = $key;
             } else {
                 // In operations do not have an operator
-                if ($operator === 'in') {
+                if (in_array($operator, ['in', 'bt'])) {
                     call_user_func_array([$queryBuilder, $method], [
                         $databaseField, $value
                     ]);
