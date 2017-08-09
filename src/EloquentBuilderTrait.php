@@ -162,6 +162,7 @@ trait EloquentBuilderTrait
                     } else {
                         $method = $not === true ? 'whereNotIn' : 'whereIn';
                     }
+                    $clauseOperator = false;
                     break;
                 case 'bt':
                     if ($or === true) {
@@ -169,6 +170,7 @@ trait EloquentBuilderTrait
                     } else {
                         $method = $not === true ? 'whereNotBetween' : 'whereBetween';
                     }
+                    $clauseOperator = false;
                     break;
             }
 
@@ -186,7 +188,7 @@ trait EloquentBuilderTrait
                     $method,
                     $clauseOperator,
                     $value,
-                    $operator === 'in'
+                    $clauseOperator // @depreciated. Here for backwards compatibility
                 ]);
 
                 // column to join.

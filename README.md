@@ -227,9 +227,11 @@ ever you are using the `EloquentBuilderTrait` implement a function named
 `filterAuthor`
 
 ```php
-public function filterAuthor(Builder $query, $method, $clauseOperator, $value, $in)
+public function filterAuthor(Builder $query, $method, $clauseOperator, $value)
 {
-    if ($in) {
+    // if clauseOperator is idential to false,
+    //     we are using a specific SQL method in its place (e.g. `in`, `between`)
+    if ($clauseOperator === false) {
         call_user_func([$query, $method], 'authors.name', $value);
     } else {
         call_user_func([$query, $method], 'authors.name', $clauseOperator, $value);
