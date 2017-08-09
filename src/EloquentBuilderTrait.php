@@ -58,7 +58,7 @@ trait EloquentBuilderTrait
         }
 
         if (isset($distinct)) {
-            $query->distinct();
+            $queryBuilder->distinct();
         }
 
         return $queryBuilder;
