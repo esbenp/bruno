@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Routing\Router;
 use Illuminate\Http\JsonResponse;
 use Optimus\Architect\Architect;
+use Illuminate\Http\Request;
 
 abstract class LaravelController extends Controller
 {
@@ -137,9 +138,11 @@ abstract class LaravelController extends Controller
      * Parse GET parameters into resource options
      * @return array
      */
-    protected function parseResourceOptions()
+    protected function parseResourceOptions($request = null)
     {
-        $request = request();
+        if ($request === null) {
+            $request = request();
+        }
 
         $this->defaults = array_merge([
             'includes' => [],
