@@ -107,17 +107,6 @@ abstract class LaravelController extends Controller
             }
 
             $filters = array_map(function($filter){
-                // Destructure Shorthand Filtering Syntax if filter is Shorthand
-                if (! array_key_exists('key', $filter) && count($filter) >= 3) {
-                    return [
-                        'key'      => ($filter[0] ?: null),
-                        'operator' => ($filter[1] ?: null),
-                        'value'    => ($filter[2] ?: null),
-                        'not'      => (array_key_exists(3, $filter) ? $filter[3] : null),
-                    ];
-                }
-
-                // not a shorthand query, so check if we need to set the 'not' key
                 if (!isset($filter['not'])) {
                     $filter['not'] = false;
                 }

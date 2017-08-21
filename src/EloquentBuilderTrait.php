@@ -103,6 +103,16 @@ trait EloquentBuilderTrait
      */
     protected function applyFilter(Builder $queryBuilder, array $filter, $or = false, array &$joins)
     {
+        // Destructure Shorthand Filtering Syntax if filter is Shorthand
+        if (! array_key_exists('key', $filter) && count($filter) >= 3) {
+            return [
+                'key'      => ($filter[0] ?: null),
+                'operator' => ($filter[1] ?: null),
+                'value'    => ($filter[2] ?: null),
+                'not'      => (array_key_exists(3, $filter) ? $filter[3] : null),
+            ];
+        }
+
         // $value, $not, $key, $operator
         extract($filter);
 
