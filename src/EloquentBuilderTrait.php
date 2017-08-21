@@ -192,7 +192,7 @@ trait EloquentBuilderTrait
                     $method,
                     $clauseOperator,
                     $value,
-                    $clauseOperator // @depreciated. Here for backwards compatibility
+                    $clauseOperator // @deprecated. Here for backwards compatibility
                 ]);
 
                 // column to join.

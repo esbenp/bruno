@@ -344,9 +344,9 @@ May be expressed in this manner (Shorthand)
     {
         "or": false,
         "filters": [
-            ["author", "sw" "Optimus"],
-            ["author", "ew" "Prime"],
-            ["deleted_at", "eq" null, true]
+            ["author", "sw", "Optimus"],
+            ["author", "ew", "Prime"],
+            ["deleted_at", "eq", null, true]
         ]
     }
 ]
