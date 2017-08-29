@@ -8,7 +8,12 @@ class Controller extends LaravelController
 
     // Test that setting defaults does not override
     protected $defaults = [
-        'sort' => 'name'
+        'sort' => [
+            [
+                'key' => 'name',
+                'direction' => 'DESC'
+            ]
+        ]
     ];
 
     public function getResponseWithResourceCollection()
@@ -59,6 +64,7 @@ class Controller extends LaravelController
 
     public function getResourceOptions()
     {
-        return $this->parseResourceOptions();
+        $request = $this->getRouter()->getCurrentRequest();
+        return $this->parseResourceOptions($request);
     }
 }

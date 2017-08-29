@@ -191,6 +191,7 @@ gte| Greater than or equalTo | `1548` matches `1548` and above (ony for Laravel 
 lte | Lesser than or equalTo | `1600` matches `1600` and below (ony for Laravel 5.4 and above)
 lt | Lesser than | `1600` matches `1548` but not `1700`
 in | In array | `['Giordano', 'Bruno']` matches `Giordano` and `Bruno` but not `Giovanni`
+bt | Between | `[1, 10]` matches `5` and `7` but not `11`
 
 **Special values**
 
@@ -226,9 +227,11 @@ ever you are using the `EloquentBuilderTrait` implement a function named
 `filterAuthor`
 
 ```php
-public function filterAuthor(Builder $query, $method, $clauseOperator, $value, $in)
+public function filterAuthor(Builder $query, $method, $clauseOperator, $value)
 {
-    if ($in) {
+    // if clauseOperator is idential to false,
+    //     we are using a specific SQL method in its place (e.g. `in`, `between`)
+    if ($clauseOperator === false) {
         call_user_func([$query, $method], 'authors.name', $value);
     } else {
         call_user_func([$query, $method], 'authors.name', $clauseOperator, $value);
@@ -304,6 +307,51 @@ Books with authors whoose name start with `Optimus` or ends with `Prime`.
 ```
 
 Books with authors whoose name start with Brian and which were published between years 1990 and 2000.
+
+### Optional Shorthand Filtering Syntax (Shorthand)
+Filters may be optionally expressed in Shorthand, which takes the a given filter
+array[key, operator, value, not(optional)] and builds a verbose filter array upon evaluation.
+
+For example, this group of filters (Verbose)
+```json
+[
+    {
+        "or": false,
+        "filters": [
+            {
+                "key": "author",
+                "value": "Optimus",
+                "operator": "sw"
+            },
+            {
+                "key": "author",
+                "value": "Prime",
+                "operator": "ew"
+            }
+            {
+                "key": "deleted_at",
+                "value": null,
+                "operator": "eq",
+                "not": true
+            }
+        ]
+    }
+]
+```
+May be expressed in this manner (Shorthand)
+```json
+[
+    {
+        "or": false,
+        "filters": [
+            ["author", "sw", "Optimus"],
+            ["author", "ew", "Prime"],
+            ["deleted_at", "eq", null, true]
+        ]
+    }
+]
+```
+
 
 ## Standards
 

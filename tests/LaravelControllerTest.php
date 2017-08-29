@@ -15,7 +15,12 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
 
         $options = $controller->getResourceOptions();
 
-        $this->assertEquals('name', $options['sort']);
+        $this->assertCount(1, $options['sort']);
+        $this->assertArrayHasKey('key', $options['sort'][0]);
+        $this->assertArrayHasKey('direction', $options['sort'][0]);
+
+        $this->assertEquals('name', $options['sort'][0]['key']);
+        $this->assertEquals('DESC', $options['sort'][0]['direction']);
     }
 
     public function testResponseIsGenerated()
@@ -30,25 +35,33 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
 
     public function testParametersAreAppliedCorrectly()
     {
-        $request = $this->createRequest(['children', 'children2'], 'name', 100, 2, [
+        $sort = [[ 'key' => 'name', 'direction' => 'DESC' ]];
+        $request = $this->createRequest(['children', 'children2'], $sort, 100, 2, [
             [
                 'filters' => [
-                    'name:eq(foo)',
-                    'name:ct(bar)'
+                    ['name', 'eq', 'foo'],
+                    ['name', 'ct', 'bar']
                 ]
             ]
         ]);
-        $controller = $this->createControllerMock($request);
 
+        $controller = $this->createControllerMock($request);
         $options = $controller->getResourceOptions();
 
         $this->assertEquals($options['includes'], [
             'children', 'children2'
         ]);
-        $this->assertEquals($options['sort'], 'name');
         $this->assertEquals($options['limit'], 100);
         $this->assertEquals($options['page'], 2);
-        $this->assertTrue(count($options['filter_groups']) > 2);
+        $this->assertTrue(count($options['filter_groups'][0]) === 2);
+        $this->assertTrue(count($options['filter_groups'][0]['filters']) === 2);
+
+        $this->assertCount(1, $options['sort']);
+        $this->assertArrayHasKey('key', $options['sort'][0]);
+        $this->assertArrayHasKey('direction', $options['sort'][0]);
+
+        $this->assertEquals('name', $options['sort'][0]['key']);
+        $this->assertEquals('DESC', $options['sort'][0]['direction']);
     }
 
     public function testArchitectIsFired()
@@ -69,7 +82,8 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
      */
     public function testThatExceptionIsThrownWhenSettingPageButNotLimit()
     {
-        $request = $this->createRequest(['children', 'children2'], 'name', null, 2);
+        $sort = [[ 'key' => 'name', 'direction' => 'DESC' ]];
+        $request = $this->createRequest(['children', 'children2'], $sort, null, 2);
         $controller = $this->createControllerMock($request);
 
         $controller->getResourceOptions();
@@ -86,7 +100,7 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
         return $controller;
     }
 
-    private function createRequest(array $includes = [], $sort = 'property', $limit = null, $page = null, array $filters = [])
+    private function createRequest(array $includes = [], $sort = false, $limit = null, $page = null, array $filter_groups = [])
     {
         $vars = [];
         if (!empty($includes)) {
@@ -94,6 +108,14 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
         }
 
         if (!is_null($sort)) {
+            if ($sort === false) {
+                $sort = [
+                    [
+                        'key' => 'name',
+                        'direction' => 'DESC'
+                    ]
+                ];
+            }
             $vars['sort'] = $sort;
         }
 
@@ -105,8 +127,8 @@ class LaravelControllerTest extends Orchestra\Testbench\TestCase
             $vars['page'] = $page;
         }
 
-        if (!empty($filters)) {
-            $vars['filters'] = $filters;
+        if (!empty($filter_groups)) {
+            $vars['filter_groups'] = $filter_groups;
         }
 
         return new Request($vars);

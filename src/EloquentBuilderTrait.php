@@ -54,7 +54,15 @@ trait EloquentBuilderTrait
         }
 
         if (isset($page)) {
-            $queryBuilder->offset($page*$limit);
+            if (! isset($limit)) {
+                throw new InvalidArgumentException('A limit is required when using page.');
+            }
+
+            $queryBuilder->offset($page * $limit);
+        }
+
+        if (isset($distinct)) {
+            $queryBuilder->distinct();
         }
 
         return $queryBuilder;
@@ -95,6 +103,16 @@ trait EloquentBuilderTrait
      */
     protected function applyFilter(Builder $queryBuilder, array $filter, $or = false, array &$joins)
     {
+        // Destructure Shorthand Filtering Syntax if filter is Shorthand
+        if (! array_key_exists('key', $filter) && count($filter) >= 3) {
+            $filter = [
+                'key'      => ($filter[0] ?: null),
+                'operator' => ($filter[1] ?: null),
+                'value'    => ($filter[2] ?: null),
+                'not'      => (array_key_exists(3, $filter) ? $filter[3] : null),
+            ];
+        }
+
         // $value, $not, $key, $operator
         extract($filter);
 
@@ -148,6 +166,15 @@ trait EloquentBuilderTrait
                     } else {
                         $method = $not === true ? 'whereNotIn' : 'whereIn';
                     }
+                    $clauseOperator = false;
+                    break;
+                case 'bt':
+                    if ($or === true) {
+                        $method = $not === true ? 'orWhereNotBetween' : 'orWhereBetween';
+                    } else {
+                        $method = $not === true ? 'whereNotBetween' : 'whereBetween';
+                    }
+                    $clauseOperator = false;
                     break;
             }
 
@@ -165,7 +192,7 @@ trait EloquentBuilderTrait
                     $method,
                     $clauseOperator,
                     $value,
-                    $operator === 'in'
+                    $clauseOperator // @deprecated. Here for backwards compatibility
                 ]);
 
                 // column to join.
@@ -173,7 +200,7 @@ trait EloquentBuilderTrait
                 $joins[] = $key;
             } else {
                 // In operations do not have an operator
-                if ($operator === 'in') {
+                if (in_array($operator, ['in', 'bt'])) {
                     call_user_func_array([$queryBuilder, $method], [
                         $databaseField, $value
                     ]);
