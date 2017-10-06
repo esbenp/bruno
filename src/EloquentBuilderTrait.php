@@ -149,7 +149,7 @@ trait EloquentBuilderTrait
                     $clauseOperator = $not ? '!=' : '=';
                     break;
                 case 'gt':
-                    $clauseOperator = $not ? '<' : '>';
+                    $clauseOperator = $not ? '<=' : '>';
                     break;
                 case 'gte':
                     $clauseOperator = $not ? '<' : '>=';
@@ -158,7 +158,7 @@ trait EloquentBuilderTrait
                     $clauseOperator = $not ? '>' : '<=';
                     break;
                 case 'lt':
-                    $clauseOperator = $not ? '>' : '<';
+                    $clauseOperator = $not ? '>=' : '<';
                     break;
                 case 'in':
                     if ($or === true) {
