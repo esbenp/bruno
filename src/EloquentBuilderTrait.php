@@ -279,9 +279,9 @@ trait EloquentBuilderTrait
             if ($relation instanceof BelongsTo) {
                 $queryBuilder->join(
                     $relation->getRelated()->getTable(),
-                    $model->getTable().'.'.$relation->getQualifiedForeignPivotKeyName(),
+                    $relation->getQualifiedParentKeyName(),
                     '=',
-                    $relation->getRelated()->getTable().'.'.$relation->getOwnerKey(),
+                    $relation->getQualifiedOwnerKeyName(),
                     $type
                 );
             } elseif ($relation instanceof BelongsToMany) {
@@ -296,7 +296,7 @@ trait EloquentBuilderTrait
                     $relation->getRelated()->getTable(),
                     $relation->getRelated()->getTable().'.'.$relation->getRelated()->getKeyName(),
                     '=',
-                    $relation->getQualifiedRelatedPivotKeyName(),
+                    $relation->getQualifiedRelatedKeyName(),
                     $type
                 );
             } else {
@@ -304,7 +304,7 @@ trait EloquentBuilderTrait
                     $relation->getRelated()->getTable(),
                     $relation->getQualifiedParentKeyName(),
                     '=',
-                    $relation->getQualifiedForeignPivotKeyName(),
+                    $relation->getQualifiedForeignKeyName(),
                     $type
                 );
             }
