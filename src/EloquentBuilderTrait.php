@@ -139,9 +139,9 @@ trait EloquentBuilderTrait
                         'sw' => $value.'%' // starts with
                     ];
 
-                    $castToText = (($dbType === 'postgres') ? 'TEXT' : 'CHAR');
+                    $castToText = (($dbType === 'pgsql') ? 'TEXT' : 'CHAR');
                     $databaseField = DB::raw(sprintf('CAST(%s.%s AS ' . $castToText . ')', $table, $key));
-                    $clauseOperator = ($not ? 'NOT':'') . (($dbType === 'postgres') ? 'ILIKE' : 'LIKE');
+                    $clauseOperator = ($not ? 'NOT':'') . (($dbType === 'pgsql') ? 'ILIKE' : 'LIKE');
                     $value = $valueString[$operator];
                     break;
                 case 'eq':
