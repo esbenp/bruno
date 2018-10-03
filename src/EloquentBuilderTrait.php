@@ -88,7 +88,7 @@ trait EloquentBuilderTrait
             });
         }
 
-        foreach(array_diff($joins, $previouslyJoined) as $join) {
+        foreach (array_diff($joins, $previouslyJoined) as $join) {
             $this->joinRelatedModelIfExists($queryBuilder, $join);
         }
 
@@ -129,7 +129,7 @@ trait EloquentBuilderTrait
             $clauseOperator = null;
             $databaseField = null;
 
-            switch($operator) {
+            switch ($operator) {
                 case 'ct':
                 case 'sw':
                 case 'ew':
@@ -222,7 +222,7 @@ trait EloquentBuilderTrait
     protected function applySorting(Builder $queryBuilder, array $sorting, array $previouslyJoined = [])
     {
         $joins = [];
-        foreach($sorting as $sortRule) {
+        foreach ($sorting as $sortRule) {
             if (is_array($sortRule)) {
                 $key = $sortRule['key'];
                 $direction = mb_strtolower($sortRule['direction']) === 'asc' ? 'ASC' : 'DESC';
@@ -241,7 +241,7 @@ trait EloquentBuilderTrait
             }
         }
 
-        foreach(array_diff($joins, $previouslyJoined) as $join) {
+        foreach (array_diff($joins, $previouslyJoined) as $join) {
             $this->joinRelatedModelIfExists($queryBuilder, $join);
         }
 
@@ -296,7 +296,7 @@ trait EloquentBuilderTrait
                     $relation->getRelated()->getTable(),
                     $relation->getRelated()->getTable().'.'.$relation->getRelated()->getKeyName(),
                     '=',
-                    $relation->getQualifiedRelatedKeyName(),
+                    !method_exists($relation, 'getQualifiedRelatedKeyName') ? $relation->getQualifiedRelatedPivotKeyName() : $relation->getQualifiedRelatedKeyName(),
                     $type
                 );
             } else {
@@ -304,7 +304,7 @@ trait EloquentBuilderTrait
                     $relation->getRelated()->getTable(),
                     $relation->getQualifiedParentKeyName(),
                     '=',
-                    $relation->getQualifiedForeignKeyName(),
+                    !method_exists($relation, 'getQualifiedForeignKeyName') ? $relation->getQualifiedForeignPivotKeyName() : $relation->getQualifiedForeignKeyName(),
                     $type
                 );
             }
