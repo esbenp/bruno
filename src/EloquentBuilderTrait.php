@@ -108,9 +108,9 @@ trait EloquentBuilderTrait
         // Destructure Shorthand Filtering Syntax if filter is Shorthand
         if (! array_key_exists('key', $filter) && count($filter) >= 3) {
             $filter = [
-                'key'      => ($filter[0] ?: null),
-                'operator' => ($filter[1] ?: null),
-                'value'    => ($filter[2] ?: null),
+                'key'      => (array_key_exists(0, $filter) ? $filter[0] : null),
+                'operator' => (array_key_exists(1, $filter) ? $filter[1] : null),
+                'value'    => (array_key_exists(2, $filter) ? $filter[2] : null),
                 'not'      => (array_key_exists(3, $filter) ? $filter[3] : null),
             ];
         }
