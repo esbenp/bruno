@@ -298,7 +298,7 @@ trait EloquentBuilderTrait
                     $relation->getRelated()->getTable(),
                     $relation->getRelated()->getTable().'.'.$relation->getRelated()->getKeyName(),
                     '=',
-                    $relation->getQualifiedRelatedKeyName(),
+                    $relation->getQualifiedRelatedPivotKeyName(),
                     $type
                 );
             } else {
