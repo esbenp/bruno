@@ -1,10 +1,8 @@
 # Bruno
 
-[![Latest Version](https://img.shields.io/github/release/esbenp/bruno.svg?style=flat-square)](https://github.com/esbenp/bruno/releases)
+[![Latest Version](https://img.shields.io/github/release/nscharrenberg/bruno.svg?style=flat-square)](https://github.com/esbenp/bruno/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
-[![Build Status](https://img.shields.io/travis/esbenp/bruno/master.svg?style=flat-square)](https://travis-ci.org/esbenp/bruno)
-[![Coverage Status](https://img.shields.io/coveralls/esbenp/bruno.svg?style=flat-square)](https://coveralls.io/github/esbenp/bruno)
-[![Total Downloads](https://img.shields.io/packagist/dt/optimus/bruno.svg?style=flat-square)](https://packagist.org/packages/optimus/bruno)
+[![Total Downloads](https://img.shields.io/packagist/dt/nscharrenberg/bruno.svg?style=flat-square)](https://packagist.org/packages/optimus/bruno)
 
 ## Introduction
 
@@ -40,6 +38,12 @@ For Laravel 5.4 and above
 ```bash
 composer require optimus/bruno ~3.0
 ```
+
+For Laravel 6.0 and above
+```bash
+composer require nscharrenberg/bruno ~5.0
+```
+
 
 ## Usage
 
