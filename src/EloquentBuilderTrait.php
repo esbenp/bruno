@@ -11,6 +11,10 @@ use Illuminate\Support\Str;
 
 trait EloquentBuilderTrait
 {
+    /**
+     * Array of joins
+     * @var array
+     */
     protected $brunoJoins = [];
 
     /**
