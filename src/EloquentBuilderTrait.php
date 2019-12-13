@@ -80,7 +80,7 @@ trait EloquentBuilderTrait
     {
         $joins = [];
         foreach ($filterGroups as $group) {
-            $or = $group['or'];
+            $or = !!$group['or'];
             $filters = $group['filters'];
 
             $queryBuilder->where(function (Builder $query) use ($filters, $or, &$joins) {
