@@ -1,17 +1,14 @@
 language: php
 dist: trusty
-install:
-    composer install
+install: composer install
 php:
-  - 5.6
-  - 7.0
-  - 7.1
-  - 7.2
-  - hhvm
+    - 7.2
+    - 7.3
+    - 7.4
 
 script:
-  - mkdir -p build/logs
-  - php vendor/bin/phpunit -c phpunit.xml
+    - mkdir -p build/logs
+    - php vendor/bin/phpunit -c phpunit.xml
 
 after_script:
-  - php vendor/bin/coveralls -v
+    - php vendor/bin/coveralls -v
