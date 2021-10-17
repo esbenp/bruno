@@ -6,18 +6,17 @@ use DB;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use InvalidArgumentException;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 trait EloquentBuilderTrait
 {
     /**
      * Apply resource options to a query builder
-     * @param  Builder $queryBuilder
+     * @param  $queryBuilder
      * @param  array  $options
      * @return Builder
      */
-    protected function applyResourceOptions(Builder $queryBuilder, array $options = [])
+    protected function applyResourceOptions($queryBuilder, array $options = [])
     {
         if (empty($options)) {
             return $queryBuilder;
@@ -71,12 +70,12 @@ trait EloquentBuilderTrait
     }
 
     /**
-     * @param Builder $queryBuilder
+     * @param $queryBuilder
      * @param array $filterGroups
      * @param array $previouslyJoined
      * @return array
      */
-    protected function applyFilterGroups(Builder $queryBuilder, array $filterGroups = [], array $previouslyJoined = [])
+    protected function applyFilterGroups($queryBuilder, array $filterGroups = [], array $previouslyJoined = [])
     {
         $joins = [];
         foreach ($filterGroups as $group) {
@@ -98,12 +97,12 @@ trait EloquentBuilderTrait
     }
 
     /**
-     * @param Builder $queryBuilder
+     * @param $queryBuilder
      * @param array $filter
      * @param bool|false $or
      * @param array $joins
      */
-    protected function applyFilter(Builder $queryBuilder, array $filter, $or = false, array &$joins)
+    protected function applyFilter($queryBuilder, array $filter, $or = false, array &$joins)
     {
         // Destructure Shorthand Filtering Syntax if filter is Shorthand
         if (! array_key_exists('key', $filter) && count($filter) >= 3) {
@@ -216,12 +215,12 @@ trait EloquentBuilderTrait
     }
 
     /**
-     * @param Builder $queryBuilder
+     * @param $queryBuilder
      * @param array $sorting
      * @param array $previouslyJoined
      * @return array
      */
-    protected function applySorting(Builder $queryBuilder, array $sorting, array $previouslyJoined = [])
+    protected function applySorting($queryBuilder, array $sorting, array $previouslyJoined = [])
     {
         $joins = [];
         foreach($sorting as $sortRule) {
@@ -266,10 +265,10 @@ trait EloquentBuilderTrait
     }
 
     /**
-     * @param Builder $queryBuilder
+     * @param $queryBuilder
      * @param $key
      */
-    private function joinRelatedModelIfExists(Builder $queryBuilder, $key)
+    private function joinRelatedModelIfExists($queryBuilder, $key)
     {
         $model = $queryBuilder->getModel();
 
