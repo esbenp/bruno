@@ -3,6 +3,7 @@
 namespace Optimus\Bruno;
 
 use DB;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use InvalidArgumentException;
@@ -121,12 +122,15 @@ trait EloquentBuilderTrait
 
         $dbType = $queryBuilder->getConnection()->getDriverName();
 
-        $table = $queryBuilder->getModel()->getTable();
+        $tablePrefix = '';
+        if ($queryBuilder instanceof EloquentBuilder) {
+            $tablePrefix = sprintf('%s.', $queryBuilder->getModel()->getTable());
+        }
 
         if ($value === 'null' || $value === '') {
             $method = $not ? 'WhereNotNull' : 'WhereNull';
 
-            call_user_func([$queryBuilder, $method], sprintf('%s.%s', $table, $key));
+            call_user_func([$queryBuilder, $method], sprintf('%s%s', $tablePrefix, $key));
         } else {
             $method = filter_var($or, FILTER_VALIDATE_BOOLEAN) ? 'orWhere' : 'where';
             $clauseOperator = null;
@@ -143,7 +147,7 @@ trait EloquentBuilderTrait
                     ];
 
                     $castToText = (($dbType === 'pgsql') ? 'TEXT' : 'CHAR');
-                    $databaseField = DB::raw(sprintf('CAST(%s.%s AS ' . $castToText . ')', $table, $key));
+                    $databaseField = DB::raw(sprintf('CAST(%s%s AS ' . $castToText . ')', $tablePrefix, $key));
                     $clauseOperator = ($not ? 'NOT':'') . (($dbType === 'pgsql') ? 'ILIKE' : 'LIKE');
                     $value = $valueString[$operator];
                     break;
@@ -185,7 +189,7 @@ trait EloquentBuilderTrait
             // will fail when we execute it with parameters such as CAST(%s AS TEXT)
             // key needs to be reserved
             if (is_null($databaseField)) {
-                $databaseField = sprintf('%s.%s', $table, $key);
+                $databaseField = sprintf('%s%s', $tablePrefix, $key);
             }
 
             $customFilterMethod = $this->hasCustomMethod('filter', $key);
@@ -272,6 +276,10 @@ trait EloquentBuilderTrait
      */
     private function joinRelatedModelIfExists($queryBuilder, $key)
     {
+        if (!($queryBuilder instanceof EloquentBuilder)) {
+            return $queryBuilder;
+        }
+
         $model = $queryBuilder->getModel();
 
         // relationship exists, join to make special sort
