@@ -29,7 +29,9 @@ trait EloquentBuilderTrait
                 throw new InvalidArgumentException('Includes should be an array.');
             }
 
-            $queryBuilder->with($includes);
+            if (!empty($includes)) {
+                $queryBuilder->with($includes);
+            }
         }
 
         if (isset($filter_groups)) {
