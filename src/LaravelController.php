@@ -116,7 +116,7 @@ abstract class LaravelController extends Controller
 
             $return[] = [
                 'filters' => $filters,
-                'or' => isset($group['or']) ? $group['or'] : false
+                'or' => isset($group['or']) ? filter_var($group['or'], FILTER_VALIDATE_BOOLEAN) : false
             ];
         }
 
