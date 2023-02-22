@@ -111,12 +111,29 @@ abstract class LaravelController extends Controller
                     $filter['not'] = false;
                 }
 
+                if (array_key_exists('not', $filter)) {
+                    if ($filter['not'] === 'true') {
+                        $filter['not'] = true;
+                    } else if ($filter['not'] === 'false') {
+                        $filter['not'] = false;
+                    }
+                }
+
                 return $filter;
             }, $group['filters']);
 
+            $or = false;
+            if (array_key_exists('or', $group)) {
+                if ($group['or'] === 'true') {
+                    $group['or'] = true;
+                } else if ($group['or'] === 'false') {
+                    $group['or'] = false;
+                }
+            }
+
             $return[] = [
                 'filters' => $filters,
-                'or' => isset($group['or']) ? $group['or'] : false
+                'or' => $or
             ];
         }
 
