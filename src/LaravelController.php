@@ -124,9 +124,9 @@ abstract class LaravelController extends Controller
 
             $or = false;
             if (array_key_exists('or', $group)) {
-                if ($group['or'] === 'true') {
+                if ($group['or'] === 'true' || $group['or'] === true) {
                     $or = true;
-                } else if ($group['or'] === 'false') {
+                } else if ($group['or'] === 'false' || $group['or'] === false) {
                     $or = false;
                 }
             }
