@@ -6,7 +6,7 @@
         }
     },
     "require": {
-        "laravel/framework": "~6.0|~7.0|~8.0",
+        "laravel/framework": "~6.0|~7.0|~8.0|~9.0",
         "optimus/architect": "~2.0"
     },
     "require-dev": {
