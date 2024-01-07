@@ -148,7 +148,7 @@ trait EloquentBuilderTrait
 
                     $castToText = (($dbType === 'pgsql') ? 'TEXT' : 'CHAR');
                     $databaseField = DB::raw(sprintf('CAST(%s%s AS ' . $castToText . ')', $tablePrefix, $key));
-                    $clauseOperator = ($not ? 'NOT':'') . (($dbType === 'pgsql') ? 'ILIKE' : 'LIKE');
+                    $clauseOperator = ($not ? 'NOT ':'') . (($dbType === 'pgsql') ? 'ILIKE' : 'LIKE');
                     $value = $valueString[$operator];
                     break;
                 case 'eq':
@@ -168,7 +168,7 @@ trait EloquentBuilderTrait
                     $clauseOperator = $not ? '>' : '<';
                     break;
                 case 'in':
-                    if ($or === true) {
+                    if (filter_var($or, FILTER_VALIDATE_BOOLEAN) === true) {
                         $method = $not === true ? 'orWhereNotIn' : 'orWhereIn';
                     } else {
                         $method = $not === true ? 'whereNotIn' : 'whereIn';
@@ -176,7 +176,7 @@ trait EloquentBuilderTrait
                     $clauseOperator = false;
                     break;
                 case 'bt':
-                    if ($or === true) {
+                    if (filter_var($or, FILTER_VALIDATE_BOOLEAN) === true) {
                         $method = $not === true ? 'orWhereNotBetween' : 'orWhereBetween';
                     } else {
                         $method = $not === true ? 'whereNotBetween' : 'whereBetween';
