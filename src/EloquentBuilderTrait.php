@@ -62,7 +62,7 @@ trait EloquentBuilderTrait
                 throw new InvalidArgumentException('A limit is required when using page.');
             }
 
-            $queryBuilder->offset($page * $limit);
+            $queryBuilder->offset(($page > 0 ? $page - 1 : 0) * $limit);
         }
 
         if (isset($distinct)) {
