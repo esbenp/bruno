@@ -15,7 +15,7 @@ class EloquentBuilderTraitTest extends Orchestra\Testbench\TestCase
         ]));
         $mock->shouldReceive('orderBy')->once()->with('property', 'DESC');
         $mock->shouldReceive('limit')->once()->with(20);
-        $mock->shouldReceive('offset')->once()->with(40);
+        $mock->shouldReceive('offset')->once()->with(20);
         $mock->shouldReceive('where')->once()->with(m::type('callable'));
 
         $this->applyResourceOptions($mock, [
